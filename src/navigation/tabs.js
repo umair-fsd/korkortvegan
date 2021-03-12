@@ -22,7 +22,7 @@ const Tabs = () => {
             <Ionicons
               name="home"
               size={24}
-              color={focused ? COLORS.green : COLORS.black}
+              color={focused ? COLORS.primary : COLORS.black}
             />
           ),
         }}
@@ -35,7 +35,7 @@ const Tabs = () => {
             <Ionicons
               name="heart"
               size={24}
-              color={focused ? COLORS.green : COLORS.black}
+              color={focused ? COLORS.primary : COLORS.black}
             />
           ),
         }}
@@ -48,20 +48,7 @@ const Tabs = () => {
             <Ionicons
               name="person"
               size={24}
-              color={focused ? COLORS.green : COLORS.black}
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Cart"
-        component={Cart}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name="cart"
-              size={24}
-              color={focused ? COLORS.green : COLORS.black}
+              color={focused ? COLORS.primary : COLORS.black}
             />
           ),
         }}
