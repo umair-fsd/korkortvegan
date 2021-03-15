@@ -28,13 +28,13 @@ export default function App() {
           screenOptions={{
             headerShown: false,
           }}
-          initialRouteName={"Progress"}
+          initialRouteName={"Login"}
         >
           <Stack.Screen name="Home" component={Tabs} />
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="QuizScreen" component={QuizScreen} />
-          <Stack.Screen name="Results" component={ResultScreen} />
-          <Stack.Screen name="Progress" component={ProgressScreen} />
+          <Stack.Screen name="ResultScreen" component={ResultScreen} />
+          <Stack.Screen name="ProgressScreen" component={ProgressScreen} />
 
           <Stack.Screen name="Profile" component={Profile} />
         </Stack.Navigator>

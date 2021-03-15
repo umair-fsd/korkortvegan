@@ -44,7 +44,11 @@ const Login = ({ navigation }) => {
           <Button
             style={styles.btnStyle}
             mode={"outlined"}
-            onPress={() => navigation.navigate("Home")}
+            onPress={() =>
+              navigation.reset({
+                routes: [{ name: "Home" }],
+              })
+            }
           >
             <Text style={{ color: COLORS.white, fontSize: SIZES.h2 }}>
               Login

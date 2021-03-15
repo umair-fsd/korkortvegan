@@ -5,42 +5,29 @@ import { initialState } from "./state";
 //   getProductsAction,
 //   addToCart,
 // } from "./actions";
-export function reducer(state = initialState, { type, payload }) {
+export function reducer(state = initialState, { type, data }) {
   switch (type) {
-    case "GET_PRODUCTS":
+    case "SET_PROGRESS":
       return {
         ...state,
-        tests: payload,
+        userProgress: [...state.userProgress, data],
       };
-    case "ADD_PRODUCT":
+    case "SET_CORRECT":
       return {
         ...state,
-        tests: [...state.todos, payload],
+        correctAnswers: state.correctAnswers + 1,
       };
-    case "ADD_TO_CART":
+    case "SET_WRONG":
       return {
         ...state,
-        cart: [...state.cart, payload],
+        wrongAnswers: state.wrongAnswers + 1,
       };
-    case "DELETE_TEST":
+    case "SET_UNANSWERED":
       return {
         ...state,
-        tests: state.tests.filter((test) => test.code !== payload),
+        unAnswered: state.unAnswered + 1,
       };
-    case "UPDATE_CART":
-      return {
-        cartValue: { ...state.cartValue, payload },
-      };
-    case "EMPTY_CART":
-      return {
-        ...state,
-        cart: payload,
-      };
-    case "DELETE_CART_ITEM":
-      return {
-        ...state,
-        cart: state.cart.filter((item) => item.code !== payload),
-      };
+
     case "INIT_USER":
       return {
         ...state,
