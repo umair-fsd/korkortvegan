@@ -8,6 +8,10 @@ import {
   QuizScreen,
   ResultScreen,
   ProgressScreen,
+  FinalQuizScreen,
+  FinalResultScreen,
+  ///Remove on Final Build
+  TestScreen,
 } from "./src/screens";
 
 import { createStackNavigator } from "@react-navigation/stack";
@@ -28,13 +32,19 @@ export default function App() {
           screenOptions={{
             headerShown: false,
           }}
-          initialRouteName={"Login"}
+          initialRouteName={"Home"}
         >
           <Stack.Screen name="Home" component={Tabs} />
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="QuizScreen" component={QuizScreen} />
           <Stack.Screen name="ResultScreen" component={ResultScreen} />
+          <Stack.Screen
+            name="FinalResultScreen"
+            component={FinalResultScreen}
+          />
           <Stack.Screen name="ProgressScreen" component={ProgressScreen} />
+          <Stack.Screen name="TestScreen" component={TestScreen} />
+          <Stack.Screen name="FinalQuizScreen" component={FinalQuizScreen} />
 
           <Stack.Screen name="Profile" component={Profile} />
         </Stack.Navigator>

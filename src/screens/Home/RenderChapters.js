@@ -12,9 +12,12 @@ import {
 import axios from "axios";
 import { SIZES, COLORS } from "../../constants";
 import { useNavigation } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
+import { setPagingStatus } from "../../redux/actions";
 
 const Chapter = ({ chapterName, id }) => {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   return (
     <View
       style={{
@@ -46,6 +49,18 @@ const Chapter = ({ chapterName, id }) => {
                 `https://stssodra.dimitris.in/api/chaptersWithQuestions/${id}?email=admin@admin.com&password=admin`
               )
               .then((res) => {
+                var array = [];
+                for (
+                  let i = 0;
+                  i < Object.values(res.data.chaptersWithQuestions).length;
+                  i++
+                ) {
+                  array.push({
+                    question: i,
+                    status: null,
+                  });
+                }
+                dispatch(setPagingStatus(array));
                 // console.log(res.data);
                 navigation.push("QuizScreen", {
                   quizData: res.data,
@@ -75,6 +90,7 @@ const Chapter = ({ chapterName, id }) => {
 };
 
 const RenderChapters = ({ navigation }) => {
+  const dispatch = useDispatch();
   const [chapters, setChapters] = useState("");
   useEffect(() => {
     getChaptersAsync();

@@ -7,24 +7,50 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { SIZES, COLORS } from "../../constants";
-import { Header as HeaderTop, Title } from "native-base";
+import { Header as HeaderTop, Title, Left, Right } from "native-base";
+import { Ionicons } from "@expo/vector-icons";
+import { useDispatch } from "react-redux";
+import { setProgress, emptyProgress, emptyCounters } from "../../redux/actions";
 
-const Header = () => {
+const Header = ({ navigation }) => {
+  const dispatch = useDispatch();
+
   return (
     <HeaderTop
-      style={{ backgroundColor: "white" }}
+      style={{
+        backgroundColor: "white",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}
       androidStatusBarColor={COLORS.primary}
     >
-      <Text
-        style={{
-          fontSize: SIZES.h1,
-          alignSelf: "center",
-          fontWeight: "300",
-          color: COLORS.primary,
-        }}
-      >
-        Your Result
-      </Text>
+      <Left>
+        <Ionicons
+          name="home-sharp"
+          size={24}
+          color={COLORS.primary}
+          onPress={() => {
+            dispatch(emptyProgress());
+            dispatch(emptyCounters());
+
+            navigation.reset({
+              routes: [{ name: "Home" }],
+            });
+          }}
+        />
+      </Left>
+      <Title style={{ alignSelf: "center", marginLeft: 50 }}>
+        <Text
+          style={{
+            fontSize: SIZES.h1,
+            fontWeight: "300",
+            color: COLORS.primary,
+          }}
+        >
+          Your Result
+        </Text>
+      </Title>
+      <Right></Right>
     </HeaderTop>
   );
 };

@@ -9,11 +9,10 @@ const Home = () => {
   ////UseEffect////
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Header />
-
+    <View style={styles.container}>
+      <Header navigation={navigation} />
       <RenderChapters navigation={navigation} />
-    </SafeAreaView>
+    </View>
   );
 };
 

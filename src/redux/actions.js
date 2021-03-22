@@ -2,6 +2,20 @@ export const setProgress = (data) => ({
   type: "SET_PROGRESS",
   data,
 });
+export const emptyProgress = () => ({
+  type: "EMPTY_PROGRESS",
+});
+export const emptyCounters = () => ({
+  type: "EMPTY_COUNTRES",
+});
+export const setPagingStatus = (data) => ({
+  type: "SET_PAGING",
+  data,
+});
+export const updatePagingStatus = (data) => ({
+  type: "UPDATE_PAGING",
+  data,
+});
 export const setCorrectAnswers = () => ({
   type: "SET_CORRECT",
 });

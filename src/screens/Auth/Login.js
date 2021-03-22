@@ -8,8 +8,9 @@ import {
   TextInput,
 } from "react-native";
 import { Button } from "react-native-paper";
-
 import { COLORS, SIZES } from "../../constants";
+
+/////TEMP IMPORTS
 
 const Login = ({ navigation }) => {
   const renderLoginForm = () => {
@@ -54,15 +55,12 @@ const Login = ({ navigation }) => {
               Login
             </Text>
           </Button>
-          <Button
-            style={styles.btnStyle}
-            mode={"outlined"}
-            onPress={() => navigation.navigate("QuizScreen")}
-          >
+          <Button style={styles.btnStyle} mode={"outlined"}>
             <Text style={{ color: COLORS.white, fontSize: SIZES.h2 }}>
               Try Now!
             </Text>
           </Button>
+
           <Text
             style={{
               color: COLORS.primary,

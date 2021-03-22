@@ -7,7 +7,7 @@ import qs from "qs";
 import { COLORS, SIZES } from "../../constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setProgress } from "../../redux/actions";
-const ResultScreen = ({ route, navigation }) => {
+const FinalResultScreen = ({ route, navigation }) => {
   const reduxState = useSelector((state) => state.userProgress);
   const dispatch = useDispatch();
   const correctAnswers = useSelector((state) => state.correctAnswers);
@@ -154,7 +154,7 @@ const ResultScreen = ({ route, navigation }) => {
   );
 };
 
-export default ResultScreen;
+export default FinalResultScreen;
 
 const styles = StyleSheet.create({
   scoreCard: {
