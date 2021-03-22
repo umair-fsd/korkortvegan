@@ -552,7 +552,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
               }
             }}
           >
-            {/* <FontAwesome5 name="forward" size={24} color={COLORS.primary} /> */}
+            <FontAwesome5 name="forward" size={24} color={COLORS.primary} />
           </TouchableOpacity>
         </View>
       </View>

@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { RadioButton } from "react-native-paper";
-import RadioButtonRN from "radio-buttons-react-native";
+
 import {
   StyleSheet,
   Text,
@@ -14,6 +14,7 @@ import {
   Animated,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+import qs from "qs";
 import {
   AntDesign,
   MaterialCommunityIcons,
@@ -43,8 +44,6 @@ const QuizScreen = ({ route, navigation }) => {
   const [isSelected, setIsSelected] = useState(false);
   const [submit, canSubmit] = useState(false);
   const [skip, canSkip] = useState(false);
-  const [goback, canGoback] = useState(false);
-
   var [questionIndex, setQuestionIndex] = useState(0);
   const [questionID, setQuestionID] = useState(qID);
   const [counterKey, setCounterKey] = useState(0);
@@ -53,17 +52,72 @@ const QuizScreen = ({ route, navigation }) => {
   const reduxCorrectAnswers = useSelector((state) => state.correctAnswers);
   const reduxWrongAnswers = useSelector((state) => state.wrongAnswers);
   const reduxUnAnswered = useSelector((state) => state.unAnswered);
+
   //////////USE EFFECTS////////
 
   useEffect(() => {
+    jumpToQuestion();
+  }, []);
+  useEffect(() => {
     fetchOptions();
   }, [questionID, userProgress]);
+
+  ////UpdateDB////
+
+  const updateDB = async (q, a) => {
+    // const values = reduxState.reduce((r, c) => Object.assign(r, c), {});
+    // const finalResult = {
+    // UserProgress: values,
+    //  };
+    await axios({
+      method: "put",
+      url: "https://stssodra.dimitris.in/api/updateUserProgress/1",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      data: qs.stringify({
+        email: "admin@admin.com",
+        password: "admin",
+        answersArray: JSON.stringify({
+          UserProgress: {
+            [q]: a,
+          },
+        }),
+        doneUntil: questionID,
+      }),
+      headers: {
+        "content-type": "application/x-www-form-urlencoded;charset=utf-8",
+      },
+    })
+      .then((res) => {
+        console.log(q + "=>" + a);
+        // console.log(res.data);
+        dispatch(setProgress([]));
+      })
+      .catch((err) => {
+        console.log("Erreeer", err.response);
+      });
+  };
 
   ///Text To Speech ///
   const speak = () => {
     Speech.speak(quizData.chaptersWithQuestions[questionIndex].question, {
       language: "sv-SE",
     });
+  };
+
+  ///////Fetch Jump To Question///////////
+
+  const jumpToQuestion = async () => {
+    setLoading(true);
+    await axios
+      .get(
+        `https://stssodra.dimitris.in/api/getQuestionStatus/1/${id}?email=admin@admin.com&password=admin`
+      )
+      .then((res) => {
+        dispatch(setPagingStatus(res.data.QuestionStatus));
+        setLoading(false);
+      });
   };
 
   /////////Header Questions List Rendering Flat List
@@ -81,14 +135,14 @@ const QuizScreen = ({ route, navigation }) => {
           style={{
             marginHorizontal: 5,
 
-            fontWeight: item.question == questionIndex ? "bold" : "300",
+            fontWeight: item.question == questionID ? "bold" : "300",
             color:
               item.status == "correct"
-                ? "green"
+                ? COLORS.primary
                 : item.status == "wrong"
                 ? "red"
-                : COLORS.primary,
-            fontSize: item.question == questionIndex ? SIZES.h2 : SIZES.h3,
+                : "purple",
+            fontSize: item.question == questionID ? SIZES.h2 : SIZES.h3,
           }}
         >
           {index + 1}
@@ -166,7 +220,7 @@ const QuizScreen = ({ route, navigation }) => {
                       quizData.chaptersWithQuestions[questionIndex].id
                     );
                     // setCounterKey((prevKey) => prevKey + 1);
-                  } else {
+                  } else {[]
                     navigation.reset({
                       routes: [{ name: "ResultScreen" }],
                     });
@@ -291,7 +345,18 @@ const QuizScreen = ({ route, navigation }) => {
           }}
         >
           <ActivityIndicator color={COLORS.primary} size={"large"} />
-          <Text style={{ color: COLORS.primary }}>Loading Question</Text>
+          <Text
+            style={{
+              width: 200,
+              textAlign: "center",
+
+              color: COLORS.primary,
+              fontSize: SIZES.h2,
+              margin: 0,
+            }}
+          >
+            Loading Question
+          </Text>
         </View>
       ) : (
         <View
@@ -332,7 +397,7 @@ const QuizScreen = ({ route, navigation }) => {
           )}
           <View
             style={{
-              flex: 0.7,
+              flex: 1,
               backgroundColor: COLORS.primary,
               // opacity: "rgba(255,255,255,0.5)",
 
@@ -356,7 +421,7 @@ const QuizScreen = ({ route, navigation }) => {
           >
             <Text
               style={{
-                fontSize: SIZES.h3,
+                fontSize: SIZES.h2,
                 alignSelf: "center",
                 color: COLORS.white,
                 textAlign: "center",
@@ -403,7 +468,22 @@ const QuizScreen = ({ route, navigation }) => {
         }}
       >
         <View>
-          <TouchableOpacity disabled={goback == true ? false : true}>
+          <TouchableOpacity
+            disabled={questionIndex == 0 ? true : false}
+            onPress={() => {
+              if (
+                questionIndex <
+                Object.keys(quizData.chaptersWithQuestions).length - 1
+              ) {
+                // console.log(questionID);
+                setQuestionIndex(--questionIndex);
+
+                setQuestionID(quizData.chaptersWithQuestions[questionIndex].id);
+
+                fetchOptions();
+              }
+            }}
+          >
             <FontAwesome5 name="backward" size={24} color={COLORS.primary} />
           </TouchableOpacity>
         </View>
@@ -414,7 +494,7 @@ const QuizScreen = ({ route, navigation }) => {
                 alert("Please Select An Option");
                 return null;
               }
-              canGoback(true);
+
               setIsSelected(true);
               //  console.log(answer);
               await axios
@@ -422,14 +502,9 @@ const QuizScreen = ({ route, navigation }) => {
                   `https://stssodra.dimitris.in/api/getCorrectAnswer/${questionID}?email=admin@admin.com&password=admin`
                 )
                 .then((res) => {
-                  console.log(
-                    "OUTPUT => " +
-                      res.data.CorrectAnswer.answer +
-                      " == " +
-                      value
-                  );
                   if (res.data.CorrectAnswer.id == value) {
-                    alert("Correct");
+                    //alert("Correct");
+                    updateDB(questionID, value);
                     dispatch(
                       setProgress({
                         [questionID]: value,
@@ -438,14 +513,14 @@ const QuizScreen = ({ route, navigation }) => {
                     dispatch(
                       updatePagingStatus([
                         {
-                          question: questionIndex,
+                          question: questionID,
                           status: "correct",
                         },
                       ])
                     );
                     //console.log(Object.keys(userProgress).length);
                     dispatch(setCorrectAnswers());
-                    console.log(reduxCorrectAnswers);
+
                     /////if questions quiz is completed?
                     if (
                       questionIndex <
@@ -463,6 +538,7 @@ const QuizScreen = ({ route, navigation }) => {
                     }
                   } else {
                     // alert("False");
+                    updateDB(questionID, value); //Update Progress
                     dispatch(
                       setProgress({
                         [questionID]: value,
@@ -471,7 +547,7 @@ const QuizScreen = ({ route, navigation }) => {
                     dispatch(
                       updatePagingStatus([
                         {
-                          question: questionIndex,
+                          question: questionID,
                           status: "wrong",
                         },
                       ])
@@ -479,6 +555,7 @@ const QuizScreen = ({ route, navigation }) => {
 
                     //console.log(Object.keys(userProgress).length);
                     dispatch(setWrongAnswers());
+
                     console.log(reduxWrongAnswers);
                     if (
                       questionIndex <
@@ -526,6 +603,15 @@ const QuizScreen = ({ route, navigation }) => {
                     [questionID]: null,
                   })
                 );
+                updateDB(questionID, null);
+                dispatch(
+                  updatePagingStatus([
+                    {
+                      question: questionID,
+                      status: null,
+                    },
+                  ])
+                );
 
                 console.log(userProgress);
                 // console.log(questionID);
@@ -544,6 +630,8 @@ const QuizScreen = ({ route, navigation }) => {
                     [questionID]: null,
                   })
                 );
+                updateDB(questionID, null);
+                dispatch(setUnAnswered());
 
                 navigation.reset({
                   routes: [{ name: "ResultScreen" }],

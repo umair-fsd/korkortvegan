@@ -39,17 +39,18 @@ const Header = ({ navigation }) => {
           }}
         />
       </Left>
-      <Title style={{ alignSelf: "center", marginLeft: 50 }}>
-        <Text
-          style={{
-            fontSize: SIZES.h1,
-            fontWeight: "300",
-            color: COLORS.primary,
-          }}
-        >
-          Your Result
-        </Text>
-      </Title>
+
+      <Text
+        style={{
+          fontSize: SIZES.h1,
+          fontWeight: "300",
+          color: COLORS.primary,
+          left: 50,
+        }}
+      >
+        Your Result
+      </Text>
+
       <Right></Right>
     </HeaderTop>
   );

@@ -13,7 +13,7 @@ import axios from "axios";
 import { SIZES, COLORS } from "../../constants";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch } from "react-redux";
-import { setPagingStatus } from "../../redux/actions";
+import { setPagingStatus, emptyCounters } from "../../redux/actions";
 
 const Chapter = ({ chapterName, id }) => {
   const navigation = useNavigation();
@@ -60,7 +60,8 @@ const Chapter = ({ chapterName, id }) => {
                     status: null,
                   });
                 }
-                dispatch(setPagingStatus(array));
+                dispatch(emptyCounters());
+                //dispatch(setPagingStatus(array));
                 // console.log(res.data);
                 navigation.push("QuizScreen", {
                   quizData: res.data,
@@ -112,7 +113,14 @@ const RenderChapters = ({ navigation }) => {
   return (
     <View style={{ flex: 1 }}>
       {chapters === "" ? (
-        <ActivityIndicator size={"large"} color={"red"} />
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator size={"large"} color={COLORS.primary} />
+          <Text style={{ color: COLORS.primary, fontSize: SIZES.h2 }}>
+            Loading Chapters
+          </Text>
+        </View>
       ) : (
         <FlatList
           data={chapters.allChapters}

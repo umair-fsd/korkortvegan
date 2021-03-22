@@ -6,7 +6,7 @@ import axios from "axios";
 import qs from "qs";
 import { COLORS, SIZES } from "../../constants";
 import { useDispatch, useSelector } from "react-redux";
-import { setProgress } from "../../redux/actions";
+import { emptyProgress, setProgress } from "../../redux/actions";
 const FinalResultScreen = ({ route, navigation }) => {
   const reduxState = useSelector((state) => state.userProgress);
   const dispatch = useDispatch();
@@ -33,7 +33,7 @@ const FinalResultScreen = ({ route, navigation }) => {
     };
     await axios({
       method: "put",
-      url: "https://stssodra.dimitris.in/api/updateUserProgress/1",
+      url: "https://stssodra.dimitris.in/api/updateUserProgressFinalExam/1",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
@@ -41,6 +41,7 @@ const FinalResultScreen = ({ route, navigation }) => {
         email: "admin@admin.com",
         password: "admin",
         answersArray: JSON.stringify(finalResult),
+        doneUntil: 66,
       }),
       headers: {
         "content-type": "application/x-www-form-urlencoded;charset=utf-8",
@@ -48,10 +49,10 @@ const FinalResultScreen = ({ route, navigation }) => {
     })
       .then((res) => {
         console.log(res.data);
-        dispatch(setProgress([]));
+        dispatch(emptyProgress());
       })
       .catch((err) => {
-        console.log("Erreeer", err.response);
+        console.log("Error", err.response);
       });
   };
   return (
@@ -135,16 +136,7 @@ const FinalResultScreen = ({ route, navigation }) => {
               name="bar-chart"
               size={40}
               color={COLORS.primary}
-              onPress={() => {
-                const values = reduxState.reduce(
-                  (r, c) => Object.assign(r, c),
-                  {}
-                );
-
-                const finalResult = {
-                  UserProgress: values,
-                };
-              }}
+              onPress={updateDB}
             />
             <Text>View Progress</Text>
           </View>

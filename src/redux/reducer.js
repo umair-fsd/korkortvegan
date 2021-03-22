@@ -5,8 +5,13 @@ export function reducer(state = initialState, { type, data }) {
     case "SET_PROGRESS":
       return {
         ...state,
-        userProgress: [...state.userProgress, data],
+        userProgress: data,
       };
+    // case "SET_PROGRESS":
+    //   return {
+    //     ...state,
+    //     userProgress: [...state.userProgress, data],
+    //   };
 
     case "EMPTY_PROGRESS":
       return {

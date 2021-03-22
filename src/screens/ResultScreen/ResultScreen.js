@@ -6,7 +6,7 @@ import axios from "axios";
 import qs from "qs";
 import { COLORS, SIZES } from "../../constants";
 import { useDispatch, useSelector } from "react-redux";
-import { setProgress } from "../../redux/actions";
+import { emptyCounters, setProgress } from "../../redux/actions";
 const ResultScreen = ({ route, navigation }) => {
   const reduxState = useSelector((state) => state.userProgress);
   const dispatch = useDispatch();
@@ -15,7 +15,7 @@ const ResultScreen = ({ route, navigation }) => {
   const unAnswered = useSelector((state) => state.unAnswered);
 
   useEffect(() => {
-    console.log(reduxState);
+    console.log(unAnswered);
     //updateDB();
   }),
     [];
@@ -136,14 +136,7 @@ const ResultScreen = ({ route, navigation }) => {
               size={40}
               color={COLORS.primary}
               onPress={() => {
-                const values = reduxState.reduce(
-                  (r, c) => Object.assign(r, c),
-                  {}
-                );
-
-                const finalResult = {
-                  UserProgress: values,
-                };
+                dispatch(emptyCounters());
               }}
             />
             <Text>View Progress</Text>

@@ -6,7 +6,7 @@ export const emptyProgress = () => ({
   type: "EMPTY_PROGRESS",
 });
 export const emptyCounters = () => ({
-  type: "EMPTY_COUNTRES",
+  type: "COUNTERS",
 });
 export const setPagingStatus = (data) => ({
   type: "SET_PAGING",

@@ -44,7 +44,7 @@ const Header = ({ navigation }) => {
                   console.log(res.data);
                   navigation.push("FinalQuizScreen", {
                     quizData: res.data,
-                    id,
+                    // id,
                     qID: res.data.FinalExamQuestions[0].id,
                   });
                 });
