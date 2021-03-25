@@ -43,7 +43,7 @@ const ResultScreen = ({ route, navigation }) => {
         answersArray: JSON.stringify(finalResult),
       }),
       headers: {
-        "content-type": "application/x-www-form-urlencoded;charset=utf-8",
+        "content-type": "application/x-www-form-urlencoded",
       },
     })
       .then((res) => {

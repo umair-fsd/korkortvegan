@@ -13,7 +13,10 @@ const Tab = createBottomTabNavigator();
 
 const Tabs = () => {
   return (
-    <Tab.Navigator tabBarOptions={{ showLabel: false }}>
+    <Tab.Navigator
+      screenOptions={{ unmountOnBlur: true }}
+      tabBarOptions={{ showLabel: false }}
+    >
       <Tab.Screen
         name="Home"
         component={Home}

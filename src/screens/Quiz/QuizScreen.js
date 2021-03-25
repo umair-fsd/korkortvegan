@@ -34,6 +34,8 @@ import {
 } from "../../redux/actions";
 
 const QuizScreen = ({ route, navigation }) => {
+  const user = useSelector((state) => state.user);
+  const webURL = useSelector((state) => state.webURL);
   const reduxState = useSelector((state) => state.userProgress);
   const pagingStatus = useSelector((state) => state.pagingStatus);
   const { quizData, chapterName, id, qID } = route.params;
@@ -71,13 +73,12 @@ const QuizScreen = ({ route, navigation }) => {
     //  };
     await axios({
       method: "put",
-      url: "https://stssodra.dimitris.in/api/updateUserProgress/1",
+      url: `${webURL}/api/updateUserProgress/${user.user_id}`,
       headers: {
+        Authorization: `Bearer ${user.token}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
       data: qs.stringify({
-        email: "admin@admin.com",
-        password: "admin",
         answersArray: JSON.stringify({
           UserProgress: {
             [q]: a,
@@ -85,9 +86,6 @@ const QuizScreen = ({ route, navigation }) => {
         }),
         doneUntil: questionID,
       }),
-      headers: {
-        "content-type": "application/x-www-form-urlencoded;charset=utf-8",
-      },
     })
       .then((res) => {
         console.log(q + "=>" + a);
@@ -95,7 +93,7 @@ const QuizScreen = ({ route, navigation }) => {
         dispatch(setProgress([]));
       })
       .catch((err) => {
-        console.log("Erreeer", err.response);
+        console.log("Erroor", err.response);
       });
   };
 
@@ -111,18 +109,27 @@ const QuizScreen = ({ route, navigation }) => {
   const jumpToQuestion = async () => {
     setLoading(true);
     await axios
-      .get(
-        `https://stssodra.dimitris.in/api/getQuestionStatus/1/${id}?email=admin@admin.com&password=admin`
-      )
+      .get(`${webURL}/api/getQuestionStatus/${user.user_id}/${id}`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      })
       .then((res) => {
         dispatch(setPagingStatus(res.data.QuestionStatus));
+        console.log(Object.keys(res.data.QuestionStatus).length);
         setLoading(false);
       });
   };
 
   /////////Header Questions List Rendering Flat List
   const renderListQuestions = ({ item, index }) => (
-    <View style={{ flexDirection: "row", alignSelf: "flex-end" }}>
+    <View
+      style={{
+        flexDirection: "row",
+        backgroundColor: "white",
+        marginVertical: 5,
+      }}
+    >
       <TouchableOpacity
         onPress={async () => {
           setLoading(true);
@@ -131,22 +138,37 @@ const QuizScreen = ({ route, navigation }) => {
           await fetchOptions();
         }}
       >
-        <Text
+        <View
           style={{
-            marginHorizontal: 5,
+            marginHorizontal: 3,
 
-            fontWeight: item.question == questionID ? "bold" : "300",
-            color:
+            borderRadius: 100,
+            width: 30,
+            height: 30,
+
+            justifyContent: "center",
+
+            backgroundColor:
               item.status == "correct"
                 ? COLORS.primary
                 : item.status == "wrong"
-                ? "red"
-                : "purple",
-            fontSize: item.question == questionID ? SIZES.h2 : SIZES.h3,
+                ? "#e74c3c"
+                : item.status == "favorite"
+                ? "#9b59b6"
+                : "#3498db",
           }}
         >
-          {index + 1}
-        </Text>
+          <Text
+            style={{
+              color: "white",
+              textAlign: "center",
+              fontSize: item.question == questionID ? SIZES.h2 : SIZES.h4,
+              fontWeight: item.question == questionID ? "bold" : "300",
+            }}
+          >
+            {index + 1}
+          </Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -177,7 +199,12 @@ const QuizScreen = ({ route, navigation }) => {
   const fetchOptions = async () => {
     setLoading(true);
     const res = await axios.get(
-      `https://stssodra.dimitris.in/api/getAnswersForQuestion/${questionID}?email=admin@admin.com&password=admin`
+      `${webURL}/api/getAnswersForQuestion/${questionID}`,
+      {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      }
     );
     const { data } = res;
     setOptions(res.data);
@@ -302,36 +329,25 @@ const QuizScreen = ({ route, navigation }) => {
   return (
     <>
       <Header
-        style={{ backgroundColor: "white" }}
+        style={{ backgroundColor: COLORS.primary }}
         androidStatusBarColor={COLORS.primary}
       >
-        <Left style={{ flex: 1 }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <Text
             style={{
               fontSize: SIZES.h2,
-              alignSelf: "flex-start",
-              fontWeight: "300",
-              color: COLORS.primary,
+
+              fontWeight: "bold",
+              color: "white",
             }}
           >
             {chapterName}
           </Text>
-        </Left>
+        </View>
 
-        <>
-          <Right style={{ flex: 2 }}>
-            {
-              <FlatList
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                data={pagingStatus}
-                keyExtractor={(item) => item.question.toString()}
-                renderItem={renderListQuestions}
-                key={questionIndex}
-              />
-            }
-          </Right>
-        </>
+        <></>
       </Header>
 
       {/* <Header title={chapterName} questionIndex={questionIndex} /> */}
@@ -363,7 +379,7 @@ const QuizScreen = ({ route, navigation }) => {
           style={{
             flex: 1,
             backgroundColor: "white",
-            justifyContent: "space-between",
+            justifyContent: "center",
           }}
         >
           {quizData.chaptersWithQuestions[questionIndex].imgURL == null ? (
@@ -372,7 +388,7 @@ const QuizScreen = ({ route, navigation }) => {
               style={{
                 width: 130,
                 height: 130,
-                marginTop: 5,
+                // marginTop: 5,
 
                 resizeMode: "contain",
                 alignSelf: "center",
@@ -382,8 +398,7 @@ const QuizScreen = ({ route, navigation }) => {
             <Image
               source={{
                 uri:
-                  "https://stssodra.dimitris.in" +
-                  quizData.chaptersWithQuestions[questionIndex].imgURL,
+                  webURL + quizData.chaptersWithQuestions[questionIndex].imgURL,
               }}
               style={{
                 width: 130,
@@ -463,8 +478,7 @@ const QuizScreen = ({ route, navigation }) => {
         style={{
           flexDirection: "row",
           justifyContent: "space-around",
-          backgroundColor: COLORS.white,
-          marginBottom: 5,
+          backgroundColor: "white",
         }}
       >
         <View>
@@ -498,9 +512,11 @@ const QuizScreen = ({ route, navigation }) => {
               setIsSelected(true);
               //  console.log(answer);
               await axios
-                .get(
-                  `https://stssodra.dimitris.in/api/getCorrectAnswer/${questionID}?email=admin@admin.com&password=admin`
-                )
+                .get(`${webURL}/api/getCorrectAnswer/${questionID}`, {
+                  headers: {
+                    Authorization: `Bearer ${user.token}`,
+                  },
+                })
                 .then((res) => {
                   if (res.data.CorrectAnswer.id == value) {
                     //alert("Correct");
@@ -583,8 +599,9 @@ const QuizScreen = ({ route, navigation }) => {
                 borderWidth: 1,
                 padding: 10,
                 borderRadius: 10,
-                marginTop: -5,
-                color: COLORS.primary,
+                bottom: 5,
+                backgroundColor: COLORS.primary,
+                color: "white",
               }}
             >
               Submit
@@ -643,6 +660,16 @@ const QuizScreen = ({ route, navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
+      <View style={{ backgroundColor: "white" }}>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={pagingStatus}
+          keyExtractor={(item) => item.question.toString()}
+          renderItem={renderListQuestions}
+          key={questionIndex}
+        />
+      </View>
       <View style={styles.bottomBar}>
         <Text
           style={{
@@ -677,7 +704,7 @@ const QuizScreen = ({ route, navigation }) => {
             strokeWidth={8}
             duration={3000}
             colors={[
-              ["#004777", 0.4],
+              [COLORS.primary, 0.4],
               ["#F7B801", 0.4],
               ["#A30000", 0.2],
             ]}
@@ -696,12 +723,44 @@ const QuizScreen = ({ route, navigation }) => {
             )}
           </CountdownCircleTimer>
         </View>
-        <AntDesign
-          name="heart"
-          size={24}
-          color={COLORS.primary}
-          style={{ marginRight: 10, alignSelf: "center" }}
-        />
+        <TouchableOpacity
+          style={{ alignSelf: "center" }}
+          onPress={async () => {
+            await axios({
+              method: "put",
+              url: `${webURL}/api/saveQuestion `,
+              headers: {
+                Authorization: `Bearer ${user.token}`,
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              data: qs.stringify({
+                user_id: user.user_id,
+                question_id: questionID,
+              }),
+            })
+              .then((res) => {
+                dispatch(
+                  updatePagingStatus([
+                    {
+                      question: questionID,
+                      status: "favorite",
+                    },
+                  ])
+                );
+                alert("Added To Favourites");
+              })
+              .catch((err) => {
+                console.log("Error", err.response);
+              });
+          }}
+        >
+          <AntDesign
+            name="heart"
+            size={24}
+            color={"#e74c3c"}
+            style={{ marginRight: 10, alignSelf: "center" }}
+          />
+        </TouchableOpacity>
       </View>
     </>
   );

@@ -64,7 +64,7 @@ export function reducer(state = initialState, { type, data }) {
     case "INIT_USER":
       return {
         ...state,
-        currentUser: payload,
+        user: data,
       };
 
     default:

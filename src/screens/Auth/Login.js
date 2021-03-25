@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -9,10 +9,18 @@ import {
 } from "react-native";
 import { Button } from "react-native-paper";
 import { COLORS, SIZES } from "../../constants";
+import axios from "axios";
+import { useDispatch, useSelector, webURL } from "react-redux";
+import { initUser } from "../../redux/actions";
 
 /////TEMP IMPORTS
 
 const Login = ({ navigation }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const user = useSelector((state) => state.user);
+  const webURL = useSelector((state) => state.webURL);
+  const dispatch = useDispatch();
   const renderLoginForm = () => {
     return (
       <>
@@ -36,27 +44,68 @@ const Login = ({ navigation }) => {
           </Text>
         </View>
         <View style={styles.bottomView}>
-          <TextInput style={styles.inputStyle} placeholder="Username" />
           <TextInput
             style={styles.inputStyle}
-            placeholder="Password"
+            placeholder="Email"
+            onChangeText={(v) => {
+              setEmail(v);
+            }}
+          />
+          <TextInput
             secureTextEntry
+            style={styles.inputStyle}
+            placeholder="Password"
+            onChangeText={(v) => {
+              setPassword(v);
+            }}
           />
           <Button
             style={styles.btnStyle}
             mode={"outlined"}
-            onPress={() =>
-              navigation.reset({
-                routes: [{ name: "Home" }],
-              })
-            }
+            onPress={async () => {
+              await axios
+                .post(`${webURL}/api/login`, {
+                  headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                  },
+                  email,
+                  password,
+                })
+                .then((res) => {
+                  res.status == 200 ? alert("Welcome") : null;
+                  dispatch(
+                    initUser({
+                      user_id: res.data.user_id,
+                      token: res.data.token,
+                      email,
+                      firstName: "John",
+                      lastName: "Doe",
+                    })
+                  );
+                  setEmail("");
+                  setPassword("");
+                  navigation.reset({
+                    routes: [{ name: "Home" }],
+                  });
+                })
+                .catch((err) => {
+                  console.log(err);
+                  alert("Invalid Username / Password");
+                });
+            }}
           >
-            <Text style={{ color: COLORS.white, fontSize: SIZES.h2 }}>
+            <Text style={{ color: COLORS.white, fontSize: SIZES.h3 }}>
               Login
             </Text>
           </Button>
-          <Button style={styles.btnStyle} mode={"outlined"}>
-            <Text style={{ color: COLORS.white, fontSize: SIZES.h2 }}>
+          <Button
+            style={styles.btnStyle}
+            mode={"outlined"}
+            onPress={() => {
+              console.log(user.token);
+            }}
+          >
+            <Text style={{ color: COLORS.white, fontSize: SIZES.h3 }}>
               Try Now!
             </Text>
           </Button>

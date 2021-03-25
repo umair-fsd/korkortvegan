@@ -28,5 +28,5 @@ export const setUnAnswered = () => ({
 
 export const initUser = (user) => ({
   type: "INIT_USER",
-  payload: user,
+  data: user,
 });

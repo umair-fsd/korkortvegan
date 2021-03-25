@@ -9,8 +9,11 @@ import {
 import { SIZES, COLORS } from "../../constants";
 import { Header as HeaderTop, Title, Left, Right } from "native-base";
 import axios from "axios";
+import { useSelector } from "react-redux";
 
 const Header = ({ navigation }) => {
+  const webURL = useSelector((state) => state.webURL);
+  const user = useSelector((state) => state.user);
   return (
     <HeaderTop
       style={{
@@ -37,9 +40,11 @@ const Header = ({ navigation }) => {
           onPress={() => {
             try {
               axios
-                .get(
-                  `https://stssodra.dimitris.in/api/getFinalExamQuestions/1?email=admin@admin.com&password=admin`
-                )
+                .get(webURL + `/api/getFinalExamQuestions/${user.user_id}`, {
+                  headers: {
+                    Authorization: `Bearer ${user.token}`,
+                  },
+                })
                 .then((res) => {
                   console.log(res.data);
                   navigation.push("FinalQuizScreen", {
@@ -49,13 +54,16 @@ const Header = ({ navigation }) => {
                   });
                 });
             } catch (error) {
-              // alert("Server is not responding, Please try again later");
+              alert("Server is not responding, Please try again later");
             }
           }}
         >
           <Text
             style={{
+              width: 100,
+              textAlign: "center",
               alignSelf: "flex-end",
+              fontSize: SIZES.h3,
               backgroundColor: COLORS.primary,
               padding: 10,
               borderRadius: 10,

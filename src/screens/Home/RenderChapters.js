@@ -12,10 +12,12 @@ import {
 import axios from "axios";
 import { SIZES, COLORS } from "../../constants";
 import { useNavigation } from "@react-navigation/native";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setPagingStatus, emptyCounters } from "../../redux/actions";
 
 const Chapter = ({ chapterName, id }) => {
+  const webURL = useSelector((state) => state.webURL);
+  const user = useSelector((state) => state.user);
   const navigation = useNavigation();
   const dispatch = useDispatch();
   return (
@@ -46,7 +48,12 @@ const Chapter = ({ chapterName, id }) => {
           try {
             axios
               .get(
-                `https://stssodra.dimitris.in/api/chaptersWithQuestions/${id}?email=admin@admin.com&password=admin`
+                `${webURL}/api/chaptersWithQuestions/${user.user_id}/${id}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${user.token}`,
+                  },
+                }
               )
               .then((res) => {
                 var array = [];
@@ -61,8 +68,8 @@ const Chapter = ({ chapterName, id }) => {
                   });
                 }
                 dispatch(emptyCounters());
-                //dispatch(setPagingStatus(array));
-                // console.log(res.data);
+                dispatch(setPagingStatus(array));
+
                 navigation.push("QuizScreen", {
                   quizData: res.data,
                   chapterName: chapterName,
@@ -71,7 +78,7 @@ const Chapter = ({ chapterName, id }) => {
                 });
               });
           } catch (error) {
-            // alert("Server is not responding, Please try again later");
+            alert("Server is not responding, Please try again later");
           }
         }}
       >
@@ -91,6 +98,8 @@ const Chapter = ({ chapterName, id }) => {
 };
 
 const RenderChapters = ({ navigation }) => {
+  const webURL = useSelector((state) => state.webURL);
+  const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const [chapters, setChapters] = useState("");
   useEffect(() => {
@@ -98,9 +107,11 @@ const RenderChapters = ({ navigation }) => {
   }, []);
   const getChaptersAsync = async () => {
     await axios
-      .get(
-        "https://stssodra.dimitris.in/api/getChapters?email=admin@admin.com&password=admin"
-      )
+      .get(webURL + "/api/getChapters", {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      })
       .then((res) => {
         setChapters(res.data);
         //console.log(chapters.allChapters);
@@ -109,6 +120,17 @@ const RenderChapters = ({ navigation }) => {
   const renderItem = ({ item }) => (
     <Chapter chapterName={item.chapterName} id={item.id} />
   );
+
+  const loadingView = () => {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size={"large"} color={COLORS.primary} />
+        <Text style={{ color: COLORS.primary, fontSize: SIZES.h2 }}>
+          Loading...
+        </Text>
+      </View>
+    );
+  };
 
   return (
     <View style={{ flex: 1 }}>
