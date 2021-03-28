@@ -11,7 +11,7 @@ import { Button } from "react-native-paper";
 import { COLORS, SIZES } from "../../constants";
 import axios from "axios";
 import { useDispatch, useSelector, webURL } from "react-redux";
-import { initUser } from "../../redux/actions";
+import { initUser, emptyCounters, setPagingStatus } from "../../redux/actions";
 
 /////TEMP IMPORTS
 
@@ -101,8 +101,58 @@ const Login = ({ navigation }) => {
           <Button
             style={styles.btnStyle}
             mode={"outlined"}
-            onPress={() => {
-              console.log(user.token);
+            onPress={async () => {
+              await axios
+                .post(`${webURL}/api/login`, {
+                  headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                  },
+                  email: "demo@user.com",
+                  password: "khs8AADJYZ",
+                })
+                .then(async (res) => {
+                  res.status == 200 ? console.log("Welcome") : null;
+                  dispatch(
+                    initUser({
+                      user_id: res.data.user_id,
+                      token: res.data.token,
+                      email,
+                      firstName: "John",
+                      lastName: "Doe",
+                    })
+                  );
+                  setEmail("");
+                  setPassword("");
+                  return await axios.get(webURL + `/api/getDemoQuestions`, {
+                    headers: {
+                      Authorization: `Bearer ${user.token}`,
+                    },
+                  });
+                })
+                .then((res) => {
+                  ////initialized local question status array
+                  var array = [];
+                  for (
+                    let i = 0;
+                    i < Object.values(res.data.DemoQuestions).length;
+                    i++
+                  ) {
+                    array.push({
+                      question: res.data.DemoQuestions[i].id,
+                      status: null,
+                    });
+                  } ///end
+                  dispatch(emptyCounters()); //reset counters
+                  dispatch(setPagingStatus(array)); //pushing status array with all null
+                  navigation.push("DemoQuizScreen", {
+                    quizData: res.data,
+                    qID: res.data.DemoQuestions[0].id,
+                  });
+                })
+                .catch((err) => {
+                  console.log(err);
+                  // alert("Invalid Username / Password");
+                });
             }}
           >
             <Text style={{ color: COLORS.white, fontSize: SIZES.h3 }}>

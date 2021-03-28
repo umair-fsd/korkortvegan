@@ -46,10 +46,10 @@ const Header = ({ navigation }) => {
                   },
                 })
                 .then((res) => {
-                  console.log(res.data);
+                  console.log(res.data.message);
                   navigation.push("FinalQuizScreen", {
                     quizData: res.data,
-                    // id,
+                    message: res.data.message,
                     qID: res.data.FinalExamQuestions[0].id,
                   });
                 });

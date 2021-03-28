@@ -19,6 +19,7 @@ import {
   AntDesign,
   MaterialCommunityIcons,
   FontAwesome5,
+  Ionicons,
 } from "@expo/vector-icons";
 import * as Speech from "expo-speech";
 import { SIZES, COLORS } from "../../constants";
@@ -38,7 +39,7 @@ const QuizScreen = ({ route, navigation }) => {
   const webURL = useSelector((state) => state.webURL);
   const reduxState = useSelector((state) => state.userProgress);
   const pagingStatus = useSelector((state) => state.pagingStatus);
-  const { quizData, chapterName, id, qID } = route.params;
+  const { quizData, chapterName, id, qID, doneUntil } = route.params;
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState("");
   const [options, setOptions] = useState("");
@@ -46,7 +47,9 @@ const QuizScreen = ({ route, navigation }) => {
   const [isSelected, setIsSelected] = useState(false);
   const [submit, canSubmit] = useState(false);
   const [skip, canSkip] = useState(false);
-  var [questionIndex, setQuestionIndex] = useState(0);
+  var [questionIndex, setQuestionIndex] = useState(
+    doneUntil == -1 ? 0 : doneUntil
+  );
   const [questionID, setQuestionID] = useState(qID);
   const [counterKey, setCounterKey] = useState(0);
   const [value, setValue] = React.useState("");
@@ -88,7 +91,7 @@ const QuizScreen = ({ route, navigation }) => {
       }),
     })
       .then((res) => {
-        console.log(q + "=>" + a);
+        //  console.log(q + "=>" + a);
         // console.log(res.data);
         dispatch(setProgress([]));
       })
@@ -115,8 +118,8 @@ const QuizScreen = ({ route, navigation }) => {
         },
       })
       .then((res) => {
-        dispatch(setPagingStatus(res.data.QuestionStatus));
-        console.log(Object.keys(res.data.QuestionStatus).length);
+        dispatch(setPagingStatus(res.data.ChapterQuestionStatus));
+        console.log(Object.keys(res.data.ChapterQuestionStatus).length);
         setLoading(false);
       });
   };
@@ -332,6 +335,15 @@ const QuizScreen = ({ route, navigation }) => {
         style={{ backgroundColor: COLORS.primary }}
         androidStatusBarColor={COLORS.primary}
       >
+        <Ionicons
+          onPress={() => {
+            navigation.push("Home");
+          }}
+          style={{ alignSelf: "center", left: 5 }}
+          name="arrow-back-circle-outline"
+          size={35}
+          color="white"
+        />
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
@@ -498,13 +510,52 @@ const QuizScreen = ({ route, navigation }) => {
               }
             }}
           >
-            <FontAwesome5 name="backward" size={24} color={COLORS.primary} />
+            <FontAwesome5 name="backward" size={30} color={COLORS.primary} />
           </TouchableOpacity>
+        </View>
+        <View>
+          {/* <TouchableOpacity>
+            <Text
+              style={{
+                borderColor: COLORS.primary,
+                borderWidth: 1,
+                padding: 10,
+                borderRadius: 10,
+                bottom: 5,
+                backgroundColor: COLORS.primary,
+                color: "white",
+              }}
+            >
+              Submit
+            </Text>
+          </TouchableOpacity> */}
         </View>
         <View>
           <TouchableOpacity
             onPress={async () => {
               if (value == "") {
+                // if (
+                //   questionIndex <
+                //   Object.keys(quizData.chaptersWithQuestions).length - 1
+                // ) {
+                //   // console.log(questionID);
+                //   setQuestionIndex(++questionIndex);
+
+                //   setQuestionID(
+                //     quizData.chaptersWithQuestions[questionIndex].id
+                //   );
+
+                //   fetchOptions();
+                //   setCounterKey((prevKey) => prevKey + 1);
+                //   dispatch(setUnAnswered());
+                // } else {
+                //   dispatch(setUnAnswered());
+
+                //   navigation.reset({
+                //     routes: [{ name: "ResultScreen" }],
+                //   });
+                // }
+
                 alert("Please Select An Option");
                 return null;
               }
@@ -572,7 +623,7 @@ const QuizScreen = ({ route, navigation }) => {
                     //console.log(Object.keys(userProgress).length);
                     dispatch(setWrongAnswers());
 
-                    console.log(reduxWrongAnswers);
+                    //   console.log(reduxWrongAnswers);
                     if (
                       questionIndex <
                       Object.keys(quizData.chaptersWithQuestions).length - 1
@@ -588,75 +639,12 @@ const QuizScreen = ({ route, navigation }) => {
                       });
                     }
                     setValue("");
-                    console.log(reduxState);
+                    // console.log(reduxState);
                   }
                 });
             }}
           >
-            <Text
-              style={{
-                borderColor: COLORS.primary,
-                borderWidth: 1,
-                padding: 10,
-                borderRadius: 10,
-                bottom: 5,
-                backgroundColor: COLORS.primary,
-                color: "white",
-              }}
-            >
-              Submit
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View>
-          <TouchableOpacity
-            onPress={() => {
-              if (
-                questionIndex <
-                Object.keys(quizData.chaptersWithQuestions).length - 1
-              ) {
-                dispatch(
-                  setProgress({
-                    [questionID]: null,
-                  })
-                );
-                updateDB(questionID, null);
-                dispatch(
-                  updatePagingStatus([
-                    {
-                      question: questionID,
-                      status: null,
-                    },
-                  ])
-                );
-
-                console.log(userProgress);
-                // console.log(questionID);
-                setQuestionIndex(++questionIndex);
-
-                setQuestionID(quizData.chaptersWithQuestions[questionIndex].id);
-
-                fetchOptions();
-                setCounterKey((prevKey) => prevKey + 1);
-                dispatch(setUnAnswered());
-              } else {
-                console.log(reduxUnAnswered);
-
-                dispatch(
-                  setProgress({
-                    [questionID]: null,
-                  })
-                );
-                updateDB(questionID, null);
-                dispatch(setUnAnswered());
-
-                navigation.reset({
-                  routes: [{ name: "ResultScreen" }],
-                });
-              }
-            }}
-          >
-            <FontAwesome5 name="forward" size={24} color={COLORS.primary} />
+            <FontAwesome5 name="forward" size={30} color={COLORS.primary} />
           </TouchableOpacity>
         </View>
       </View>

@@ -9,7 +9,9 @@ import {
   ResultScreen,
   ProgressScreen,
   FinalQuizScreen,
+  DemoQuizScreen,
   FinalResultScreen,
+  DemoResultScreen,
   ///Remove on Final Build
   TestScreen,
 } from "./src/screens";
@@ -32,12 +34,13 @@ export default function App() {
           screenOptions={{
             headerShown: false,
           }}
-          initialRouteName={"Login"}
+          initialRouteName={"TestScreen"}
         >
           <Stack.Screen name="Home" component={Tabs} />
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="QuizScreen" component={QuizScreen} />
           <Stack.Screen name="ResultScreen" component={ResultScreen} />
+          <Stack.Screen name="DemoResultScreen" component={DemoResultScreen} />
           <Stack.Screen
             name="FinalResultScreen"
             component={FinalResultScreen}
@@ -45,7 +48,7 @@ export default function App() {
           <Stack.Screen name="ProgressScreen" component={ProgressScreen} />
           <Stack.Screen name="TestScreen" component={TestScreen} />
           <Stack.Screen name="FinalQuizScreen" component={FinalQuizScreen} />
-
+          <Stack.Screen name="DemoQuizScreen" component={DemoQuizScreen} />
           <Stack.Screen name="Profile" component={Profile} />
         </Stack.Navigator>
       </NavigationContainer>

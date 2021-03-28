@@ -19,7 +19,6 @@ import {
   AntDesign,
   MaterialCommunityIcons,
   FontAwesome5,
-  Ionicons,
 } from "@expo/vector-icons";
 import * as Speech from "expo-speech";
 import { SIZES, COLORS } from "../../constants";
@@ -39,7 +38,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
   const webURL = useSelector((state) => state.webURL);
   const reduxState = useSelector((state) => state.userProgress);
   const pagingStatus = useSelector((state) => state.pagingStatus);
-  const { quizData, chapterName, id, qID, message } = route.params;
+  const { quizData, chapterName, id, qID } = route.params;
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState("");
   const [options, setOptions] = useState("");
@@ -59,9 +58,6 @@ const FinalQuizScreen = ({ route, navigation }) => {
   //////////USE EFFECTS////////
 
   useEffect(() => {
-    console.log(message);
-    message != null ? alert(message) : console.log(message);
-
     // jumpToQuestion();
   }, []);
   useEffect(() => {
@@ -103,27 +99,27 @@ const FinalQuizScreen = ({ route, navigation }) => {
 
   ///Text To Speech ///
   const speak = () => {
-    Speech.speak(quizData.FinalExamQuestions[questionIndex].question, {
+    Speech.speak(quizData.DemoQuestions[questionIndex].question, {
       language: "sv-SE",
     });
   };
 
   ///////Fetch Jump To Question///////////
 
-  const jumpToQuestion = async () => {
-    setLoading(true);
-    await axios
-      .get(`${webURL}/api/getQuestionStatus/${user.user_id}/${id}`, {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      })
-      .then((res) => {
-        dispatch(setPagingStatus(res.data.QuestionStatus));
-        console.log(Object.keys(res.data.QuestionStatus).length);
-        setLoading(false);
-      });
-  };
+  // const jumpToQuestion = async () => {
+  //   setLoading(true);
+  //   await axios
+  //     .get(`${webURL}/api/getQuestionStatus/${user.user_id}/${id}`, {
+  //       headers: {
+  //         Authorization: `Bearer ${user.token}`,
+  //       },
+  //     })
+  //     .then((res) => {
+  //       dispatch(setPagingStatus(res.data.QuestionStatus));
+  //       console.log(Object.keys(res.data.QuestionStatus).length);
+  //       setLoading(false);
+  //     });
+  // };
 
   /////////Header Questions List Rendering Flat List
   const renderListQuestions = ({ item, index }) => (
@@ -138,8 +134,11 @@ const FinalQuizScreen = ({ route, navigation }) => {
         onPress={async () => {
           setLoading(true);
           setQuestionIndex(index);
-          setQuestionID(quizData.FinalExamQuestions[index].id);
+          setQuestionID(quizData.DemoQuestions[index].id);
           await fetchOptions();
+          console.log("index is :" + index);
+          console.log("item is :" + item.question);
+          console.log("questionID is :" + questionID);
         }}
       >
         <View
@@ -180,22 +179,22 @@ const FinalQuizScreen = ({ route, navigation }) => {
   const fetchChapterQuestions = async () => {
     await axios
       .get(
-        `${webURL}/api/FinalExamQuestions/${id}?email=admin@admin.com&password=admin`
+        `${webURL}/api/DemoQuestions/${id}?email=admin@admin.com&password=admin`
       )
       .then((res) => {
         setLoading(true);
         // console.log(res.status);
 
         setQuestions(res.data);
-        //console.log(questions.FinalExamQuestions[0]);
+        //console.log(questions.DemoQuestions[0]);
         setLoading(false);
       });
 
-    // console.log(questions.FinalExamQuestions[1].id);
-    // console.log(questions.FinalExamQuestions[0].id);
+    // console.log(questions.DemoQuestions[1].id);
+    // console.log(questions.DemoQuestions[0].id);
 
-    if (!questions == "") setQuestionID(questions.FinalExamQuestions[0].id);
-    // console.log(questions.FinalExamQuestions);
+    if (!questions == "") setQuestionID(questions.DemoQuestions[0].id);
+    // console.log(questions.DemoQuestions);
 
     fetchOptions();
   };
@@ -244,11 +243,11 @@ const FinalQuizScreen = ({ route, navigation }) => {
                   /////if questions quiz is completed?
                   if (
                     questionIndex <
-                    Object.keys(quizData.FinalExamQuestions).length - 1
+                    Object.keys(quizData.DemoQuestions).length - 1
                   ) {
                     setQuestionIndex(++questionIndex);
                     setQuestionID(
-                      quizData.FinalExamQuestions[questionIndex].id
+                      quizData.DemoQuestions[questionIndex].id
                     );
                     // setCounterKey((prevKey) => prevKey + 1);
                   } else {[]
@@ -269,11 +268,11 @@ const FinalQuizScreen = ({ route, navigation }) => {
                   console.log(reduxWrongAnswers);
                   if (
                     questionIndex <
-                    Object.keys(quizData.FinalExamQuestions).length - 1
+                    Object.keys(quizData.DemoQuestions).length - 1
                   ) {
                     setQuestionIndex(++questionIndex);
                     setQuestionID(
-                      quizData.FinalExamQuestions[questionIndex].id
+                      quizData.DemoQuestions[questionIndex].id
                     );
                     setCounterKey((prevKey) => prevKey + 1);
                   } else {
@@ -337,55 +336,18 @@ const FinalQuizScreen = ({ route, navigation }) => {
         androidStatusBarColor={COLORS.primary}
       >
         <View
-          style={{
-            flex: 1,
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexDirection: "row",
-          }}
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-          <Ionicons
-            onPress={() => {
-              navigation.push("Home");
-            }}
-            style={{ alignSelf: "center", left: 5 }}
-            name="arrow-back-circle-outline"
-            size={35}
-            color="white"
-          />
           <Text
             style={{
               fontSize: SIZES.h2,
 
               fontWeight: "bold",
               color: "white",
-              left: 20,
             }}
           >
-            Final Exam
+            Demo
           </Text>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.reset({
-                routes: [{ name: "FinalResultScreen" }],
-              });
-            }}
-          >
-            <Text
-              style={{
-                fontSize: SIZES.h3,
-                color: "white",
-                alignSelf: "center",
-                borderWidth: 1,
-                padding: 10,
-                borderColor: "white",
-                borderRadius: 10,
-                textAlign: "center",
-              }}
-            >
-              Overview
-            </Text>
-          </TouchableOpacity>
         </View>
 
         <></>
@@ -423,7 +385,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
             justifyContent: "center",
           }}
         >
-          {quizData.FinalExamQuestions[questionIndex].imgURL == null ? (
+          {quizData.DemoQuestions[questionIndex].imgURL == null ? (
             <Image
               source={require("../../../assets/placeHolder.jpeg")}
               style={{
@@ -438,7 +400,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
           ) : (
             <Image
               source={{
-                uri: webURL + quizData.FinalExamQuestions[questionIndex].imgURL,
+                uri: webURL + quizData.DemoQuestions[questionIndex].imgURL,
               }}
               style={{
                 width: 130,
@@ -483,7 +445,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
                 marginHorizontal: 15,
               }}
             >
-              {quizData.FinalExamQuestions[questionIndex].question}
+              {quizData.DemoQuestions[questionIndex].question}
             </Text>
             <View
               style={{
@@ -527,18 +489,18 @@ const FinalQuizScreen = ({ route, navigation }) => {
             onPress={() => {
               if (
                 questionIndex <
-                Object.keys(quizData.FinalExamQuestions).length - 1
+                Object.keys(quizData.DemoQuestions).length - 1
               ) {
                 // console.log(questionID);
                 setQuestionIndex(--questionIndex);
 
-                setQuestionID(quizData.FinalExamQuestions[questionIndex].id);
+                setQuestionID(quizData.DemoQuestions[questionIndex].id);
 
                 fetchOptions();
               }
             }}
           >
-            {/* <FontAwesome5 name="backward" size={24} color={COLORS.primary} /> */}
+            <FontAwesome5 name="backward" size={24} color={COLORS.primary} />
           </TouchableOpacity>
         </View>
         <View>
@@ -560,7 +522,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
                 .then((res) => {
                   if (res.data.CorrectAnswer.id == value) {
                     //alert("Correct");
-                    updateDB(questionID, value);
+                    // updateDB(questionID, value);
                     dispatch(
                       setProgress({
                         [questionID]: value,
@@ -580,21 +542,19 @@ const FinalQuizScreen = ({ route, navigation }) => {
                     /////if questions quiz is completed?
                     if (
                       questionIndex <
-                      Object.keys(quizData.FinalExamQuestions).length - 1
+                      Object.keys(quizData.DemoQuestions).length - 1
                     ) {
                       setQuestionIndex(++questionIndex);
-                      setQuestionID(
-                        quizData.FinalExamQuestions[questionIndex].id
-                      );
+                      setQuestionID(quizData.DemoQuestions[questionIndex].id);
                       // setCounterKey((prevKey) => prevKey + 1);
                     } else {
                       navigation.reset({
-                        routes: [{ name: "FinalResultScreen" }],
+                        routes: [{ name: "DemoResultScreen" }],
                       });
                     }
                   } else {
                     // alert("False");
-                    updateDB(questionID, value); //Update Progress
+                    // updateDB(questionID, value); //Update Progress
                     dispatch(
                       setProgress({
                         [questionID]: value,
@@ -615,16 +575,14 @@ const FinalQuizScreen = ({ route, navigation }) => {
                     console.log(reduxWrongAnswers);
                     if (
                       questionIndex <
-                      Object.keys(quizData.FinalExamQuestions).length - 1
+                      Object.keys(quizData.DemoQuestions).length - 1
                     ) {
                       setQuestionIndex(++questionIndex);
-                      setQuestionID(
-                        quizData.FinalExamQuestions[questionIndex].id
-                      );
+                      setQuestionID(quizData.DemoQuestions[questionIndex].id);
                       setCounterKey((prevKey) => prevKey + 1);
                     } else {
                       navigation.reset({
-                        routes: [{ name: "FinalResultScreen" }],
+                        routes: [{ name: "DemoResultScreen" }],
                       });
                     }
                     setValue("");
@@ -653,14 +611,14 @@ const FinalQuizScreen = ({ route, navigation }) => {
             onPress={() => {
               if (
                 questionIndex <
-                Object.keys(quizData.FinalExamQuestions).length - 1
+                Object.keys(quizData.DemoQuestions).length - 1
               ) {
                 dispatch(
                   setProgress({
                     [questionID]: null,
                   })
                 );
-                updateDB(questionID, null);
+                // updateDB(questionID, null);
                 dispatch(
                   updatePagingStatus([
                     {
@@ -674,7 +632,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
                 // console.log(questionID);
                 setQuestionIndex(++questionIndex);
 
-                setQuestionID(quizData.FinalExamQuestions[questionIndex].id);
+                setQuestionID(quizData.DemoQuestions[questionIndex].id);
 
                 fetchOptions();
                 setCounterKey((prevKey) => prevKey + 1);
@@ -687,28 +645,28 @@ const FinalQuizScreen = ({ route, navigation }) => {
                     [questionID]: null,
                   })
                 );
-                updateDB(questionID, null);
+                //  updateDB(questionID, null);
                 dispatch(setUnAnswered());
 
                 navigation.reset({
-                  routes: [{ name: "FinalResultScreen" }],
+                  routes: [{ name: "DemoResultScreen" }],
                 });
               }
             }}
           >
-            {/* <FontAwesome5 name="forward" size={24} color={COLORS.primary} /> */}
+            <FontAwesome5 name="forward" size={24} color={COLORS.primary} />
           </TouchableOpacity>
         </View>
       </View>
       <View style={{ backgroundColor: "white" }}>
-        {/* <FlatList
+        <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
           data={pagingStatus}
           keyExtractor={(item) => item.question.toString()}
           renderItem={renderListQuestions}
           key={questionIndex}
-        /> */}
+        />
       </View>
       <View style={styles.bottomBar}>
         <Text
@@ -720,7 +678,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
             fontWeight: "bold",
           }}
         >
-          {questionIndex + 1}/{Object.keys(quizData.FinalExamQuestions).length}
+          {questionIndex + 1}/{Object.keys(quizData.DemoQuestions).length}
         </Text>
         <View style={styles.timer}>
           <CountdownCircleTimer
@@ -728,13 +686,13 @@ const FinalQuizScreen = ({ route, navigation }) => {
             onComplete={() => {
               if (
                 questionIndex <
-                Object.keys(quizData.FinalExamQuestions).length - 1
+                Object.keys(quizData.DemoQuestions).length - 1
               ) {
                 setQuestionIndex(++questionIndex);
-                setQuestionID(quizData.FinalExamQuestions[questionIndex].id);
+                setQuestionID(quizData.DemoQuestions[questionIndex].id);
               } else {
                 navigation.reset({
-                  routes: [{ name: "FinalResultScreen" }],
+                  routes: [{ name: "DemoResultScreen" }],
                 });
               }
             }}
@@ -763,6 +721,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
           </CountdownCircleTimer>
         </View>
         <AntDesign
+          onPress={() => alert("Not available in demo")}
           name="heart"
           size={24}
           color={"#e74c3c"}

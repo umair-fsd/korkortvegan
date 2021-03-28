@@ -56,7 +56,13 @@ const Chapter = ({ chapterName, id }) => {
                 }
               )
               .then((res) => {
+                var doneUntil = res.data.chaptersWithQuestions.findIndex(
+                  (s) => s.id == res.data.doneUntil
+                );
+                console.log(doneUntil);
                 var array = [];
+
+                ////initialized local question status array
                 for (
                   let i = 0;
                   i < Object.values(res.data.chaptersWithQuestions).length;
@@ -66,15 +72,19 @@ const Chapter = ({ chapterName, id }) => {
                     question: i,
                     status: null,
                   });
-                }
-                dispatch(emptyCounters());
-                dispatch(setPagingStatus(array));
+                } ///end
+                dispatch(emptyCounters()); //reset counters
+                dispatch(setPagingStatus(array)); //pushing status array with all null
 
                 navigation.push("QuizScreen", {
                   quizData: res.data,
                   chapterName: chapterName,
                   id,
-                  qID: res.data.chaptersWithQuestions[0].id,
+                  doneUntil,
+                  qID:
+                    res.data.chaptersWithQuestions[
+                      doneUntil == -1 ? 0 : doneUntil
+                    ].id,
                 });
               });
           } catch (error) {
