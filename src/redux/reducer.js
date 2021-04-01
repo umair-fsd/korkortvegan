@@ -46,6 +46,11 @@ export function reducer(state = initialState, { type, data }) {
         ...state,
         pagingStatus: data,
       };
+    case "SET_OPTIONS":
+      return {
+        ...state,
+        options: data,
+      };
     case "UPDATE_PAGING":
       state.pagingStatus.map((value) => {
         value.question == data[0].question
@@ -65,6 +70,11 @@ export function reducer(state = initialState, { type, data }) {
       return {
         ...state,
         user: data,
+      };
+    case "SET_TIMER":
+      return {
+        ...state,
+        timerValue: data,
       };
 
     default:

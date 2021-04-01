@@ -20,6 +20,7 @@ const RenderOverView = ({
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const webURL = useSelector((state) => state.webURL);
+
   return (
     <View style={styles.cardStyle}>
       <View style={{ flex: 1, flexDirection: "row" }}>
@@ -77,16 +78,14 @@ const RenderOverView = ({
             onPress={() => {
               try {
                 axios
-                  .get(
-                    `${webURL}/api/chaptersWithQuestions/${user.user_id}/${chapter_id}`,
-                    {
-                      headers: {
-                        Authorization: `Bearer ${user.token}`,
-                      },
-                    }
-                  )
+                  .get(`${webURL}/api/getFinalExamQuestions/${user.user_id}`, {
+                    headers: {
+                      Authorization: `Bearer ${user.token}`,
+                    },
+                  })
                   .then((res) => {
-                    var doneUntil = res.data.chaptersWithQuestions.findIndex(
+                    //console.log(res.data.FinalExamQuestions);
+                    var doneUntil = res.data.FinalExamQuestions.findIndex(
                       (s) => s.id == question_id
                     );
                     console.log("chapter id:" + chapter_id);
@@ -97,7 +96,7 @@ const RenderOverView = ({
                     ////initialized local question status array
                     for (
                       let i = 0;
-                      i < Object.values(res.data.chaptersWithQuestions).length;
+                      i < Object.values(res.data.FinalExamQuestions).length;
                       i++
                     ) {
                       array.push({
@@ -108,13 +107,13 @@ const RenderOverView = ({
                     dispatch(emptyCounters()); //reset counters
                     dispatch(setPagingStatus(array)); //pushing status array with all null
 
-                    navigation.push("QuizScreen", {
+                    navigation.push("FinalQuizScreen", {
                       quizData: res.data,
                       // chapterName: chapterName,
-                      id,
+                      // id,
                       doneUntil,
                       qID:
-                        res.data.chaptersWithQuestions[
+                        res.data.FinalExamQuestions[
                           doneUntil == -1 ? 0 : doneUntil
                         ].id,
                     });

@@ -12,7 +12,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Animated,
+  Modal,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch, useSelector } from "react-redux";
 import qs from "qs";
 import {
@@ -23,7 +25,8 @@ import {
 } from "@expo/vector-icons";
 import * as Speech from "expo-speech";
 import { SIZES, COLORS } from "../../constants";
-import { CountdownCircleTimer } from "react-native-countdown-circle-timer";
+import { CountdownCircleTimer } from "react-native-countdown-circle-timer"; //Old Timer lib..
+import CountDown from "react-native-countdown-component";
 import { Header, Title, Right, Left } from "native-base";
 import {
   setProgress,
@@ -32,9 +35,22 @@ import {
   setUnAnswered,
   updatePagingStatus,
   setPagingStatus,
+  setTimer,
+  setOptions,
 } from "../../redux/actions";
 
 const QuizScreen = ({ route, navigation }) => {
+  ////Timer Hooks///
+  var [count, setCount] = useState(0);
+  const [running, setRunning] = useState(false);
+  const [modalVisible, setModalVisible] = useState(true);
+  const timerValue = useSelector((state) => state.timerValue);
+  //const options = useSelector((state) => state.options);
+  const [key, setKey] = useState(0);
+  const [contuniue, setCanContinue] = useState(false);
+
+  /////End////
+  const [answerID, setAnswerID] = useState("");
   const user = useSelector((state) => state.user);
   const webURL = useSelector((state) => state.webURL);
   const reduxState = useSelector((state) => state.userProgress);
@@ -42,17 +58,23 @@ const QuizScreen = ({ route, navigation }) => {
   const { quizData, chapterName, id, qID, doneUntil } = route.params;
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState("");
-  const [options, setOptions] = useState("");
+  const [options, setOptions] = useState(() => {
+    return;
+  }); ///// Local State of options
   const [userProgress, setUserProgress] = useState([]);
   const [isSelected, setIsSelected] = useState(false);
   const [submit, canSubmit] = useState(false);
   const [skip, canSkip] = useState(false);
-  var [questionIndex, setQuestionIndex] = useState(
-    doneUntil == -1 ? 0 : doneUntil
-  );
-  const [questionID, setQuestionID] = useState(qID);
+  var [questionIndex, setQuestionIndex] = useState(() => {
+    return doneUntil == -1 ? 0 : doneUntil;
+  });
+  const [questionID, setQuestionID] = useState(() => {
+    return qID;
+  });
   const [counterKey, setCounterKey] = useState(0);
-  const [value, setValue] = React.useState("");
+  const [value, setValue] = useState(() => {
+    return "";
+  });
   const dispatch = useDispatch();
   const reduxCorrectAnswers = useSelector((state) => state.correctAnswers);
   const reduxWrongAnswers = useSelector((state) => state.wrongAnswers);
@@ -61,11 +83,48 @@ const QuizScreen = ({ route, navigation }) => {
   //////////USE EFFECTS////////
 
   useEffect(() => {
+    getData();
+    setModalVisible(true);
     jumpToQuestion();
   }, []);
   useEffect(() => {
     fetchOptions();
-  }, [questionID, userProgress]);
+  }, [questionID]);
+
+  //////Store And Get Timer From Async Storage////
+  const storeData = async (value) => {
+    try {
+      await AsyncStorage.setItem("@timer", value);
+      await AsyncStorage.setItem("@chapterName", chapterName);
+    } catch (e) {
+      // saving error
+    }
+  };
+
+  const getData = async () => {
+    try {
+      const value = await AsyncStorage.getItem("@timer");
+      const storedChapterName = await AsyncStorage.getItem("@chapterName");
+
+      if (
+        storedChapterName !== null &&
+        storedChapterName == chapterName &&
+        value !== "0"
+      ) {
+        setCanContinue(true);
+      }
+
+      if (value !== null) {
+        // value previously stored
+        setCount(value);
+        dispatch(setTimer(value));
+        console.log(value);
+      }
+    } catch (e) {
+      // error reading value
+    }
+  };
+  ////End Async Storage Functions
 
   ////UpdateDB////
 
@@ -92,11 +151,12 @@ const QuizScreen = ({ route, navigation }) => {
     })
       .then((res) => {
         //  console.log(q + "=>" + a);
-        // console.log(res.data);
+        console.log(res.data);
+        console.log("DoneUntil: " + questionID);
         dispatch(setProgress([]));
       })
       .catch((err) => {
-        console.log("Erroor", err.response);
+        console.log("Error", err.response);
       });
   };
 
@@ -134,11 +194,15 @@ const QuizScreen = ({ route, navigation }) => {
       }}
     >
       <TouchableOpacity
-        onPress={async () => {
+        onPress={() => {
+          console.log(index);
+          setQuestionID(() => {
+            return quizData.chaptersWithQuestions[index].id;
+          });
           setLoading(true);
           setQuestionIndex(index);
-          setQuestionID(quizData.chaptersWithQuestions[index].id);
-          await fetchOptions();
+
+          //fetchOptions();
         }}
       >
         <View
@@ -193,32 +257,46 @@ const QuizScreen = ({ route, navigation }) => {
     // console.log(questions.chaptersWithQuestions[1].id);
     // console.log(questions.chaptersWithQuestions[0].id);
 
-    if (!questions == "") setQuestionID(questions.chaptersWithQuestions[0].id);
+    if (!questions == "")
+      setQuestionID(() => {
+        return questions.chaptersWithQuestions[0].id;
+      });
     // console.log(questions.chaptersWithQuestions);
 
-    fetchOptions();
+    //await fetchOptions();
   };
 
   const fetchOptions = async () => {
+    console.log("Question ID is : " + questionID);
     setLoading(true);
-    const res = await axios.get(
-      `${webURL}/api/getAnswersForQuestion/${questionID}`,
-      {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      }
-    );
-    const { data } = res;
-    setOptions(res.data);
-    setLoading(false);
+    const res = await axios
+      .get(
+        `${webURL}/api/getAnswersForQuestion/${questionID}/${user.user_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      )
+      .then((res) => {
+        setOptions(() => {
+          return res.data;
+        });
+        setLoading(false);
+      });
+
     // console.log(questionID);
   };
   const renderItem = ({ item }) => (
-    <OptionBox answer={item.answer} answerID={item.id} />
+    <OptionBox
+      answer={item.answer}
+      answerID={item.id}
+      correctAnswerID={options.correctAnswerID}
+      userAnswerID={options.userAnswerID}
+    />
   );
 
-  const OptionBox = ({ answer, answerID }) => {
+  const OptionBox = ({ answer, answerID, correctAnswerID, userAnswerID }) => {
     return (
       <View style={{ flex: 1 }}>
         {/* <TouchableOpacity
@@ -305,17 +383,34 @@ const QuizScreen = ({ route, navigation }) => {
             {answer}
           </Text> */}
         <RadioButton.Group
+          value={value}
           onValueChange={(value) => {
             setValue(value);
           }}
-          value={value}
         >
           <RadioButton.Item
-            style={{ marginVertical: -5 }}
-            labelStyle={{ fontSize: SIZES.h4, color: COLORS.primary }}
+            style={{
+              marginVertical: -5,
+              padding: 3,
+              borderWidth: 1,
+              borderColor:
+                userAnswerID == answerID ? "rgba(0,0,0,0.1)" : "white",
+            }}
+            labelStyle={{
+              textAlign: "center",
+              padding: 3,
+              fontSize: SIZES.h4,
+              color:
+                userAnswerID == null
+                  ? COLORS.primary
+                  : correctAnswerID == answerID
+                  ? "green"
+                  : "red",
+            }}
             color={COLORS.primary}
             label={answer}
             value={answerID}
+            status={answerID == userAnswerID ? "checked" : "unchecked"}
           />
         </RadioButton.Group>
         {/* </TouchableOpacity> */}
@@ -337,7 +432,7 @@ const QuizScreen = ({ route, navigation }) => {
       >
         <Ionicons
           onPress={() => {
-            navigation.push("Home");
+            navigation.navigate("Home");
           }}
           style={{ alignSelf: "center", left: 5 }}
           name="arrow-back-circle-outline"
@@ -361,6 +456,81 @@ const QuizScreen = ({ route, navigation }) => {
 
         <></>
       </Header>
+      <Modal
+        style={{ position: "absolute" }}
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          Alert.alert("Modal has been closed.");
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>Start Chapter With Timer? </Text>
+            <View style={{ flexDirection: "row" }}>
+              <TouchableOpacity
+                style={{
+                  ...styles.openButton,
+                  backgroundColor: "green",
+                  marginHorizontal: 5,
+                }}
+                onPress={() => {
+                  storeData("3000");
+                  dispatch(setTimer(3000));
+                  setCount(3000);
+                  setRunning(true);
+                  setKey(key + 1);
+                  setModalVisible(!modalVisible);
+                }}
+              >
+                <Text style={styles.textStyle}>Yes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  ...styles.openButton,
+                  backgroundColor: "red",
+                  marginLeft: 30,
+                }}
+                onPress={async () => {
+                  try {
+                    await AsyncStorage.setItem("@timer", "0");
+                  } catch (e) {
+                    // saving error
+                  }
+                  dispatch(setTimer(0));
+                  setCount(0);
+                  setRunning(false);
+                  setModalVisible(!modalVisible);
+                }}
+              >
+                <Text style={styles.textStyle}>No</Text>
+              </TouchableOpacity>
+            </View>
+            {contuniue == true ? (
+              <TouchableOpacity
+                onPress={async () => {
+                  const val = await AsyncStorage.getItem("@timer");
+                  console.log(val);
+                  storeData(val);
+                  dispatch(setTimer(val));
+                  setCount(0);
+                  setRunning(true);
+                  setModalVisible(!modalVisible);
+                }}
+              >
+                <View style={{ marginTop: 20 }}>
+                  <Text style={{ color: COLORS.primary }}>
+                    Continue with old timer
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ) : (
+              <></>
+            )}
+          </View>
+        </View>
+      </Modal>
 
       {/* <Header title={chapterName} questionIndex={questionIndex} /> */}
       {loading == true ? (
@@ -395,26 +565,27 @@ const QuizScreen = ({ route, navigation }) => {
           }}
         >
           {quizData.chaptersWithQuestions[questionIndex].imgURL == null ? (
-            <Image
-              source={require("../../../assets/placeHolder.jpeg")}
-              style={{
-                width: 130,
-                height: 130,
-                // marginTop: 5,
-
-                resizeMode: "contain",
-                alignSelf: "center",
-              }}
-            />
+            <View style={{ marginTop: 20 }}></View>
           ) : (
+            // <Image
+            //   source={require("../../../assets/placeHolder.jpeg")}
+            //   style={{
+            //     width: 200,
+            //     height: 200,
+            //     // marginTop: 5,
+
+            //     resizeMode: "contain",
+            //     alignSelf: "center",
+            //   }}
+            // />
             <Image
               source={{
                 uri:
                   webURL + quizData.chaptersWithQuestions[questionIndex].imgURL,
               }}
               style={{
-                width: 130,
-                height: 130,
+                width: 200,
+                height: 200,
                 marginTop: 5,
                 bottom: 5,
                 resizeMode: "contain",
@@ -424,12 +595,12 @@ const QuizScreen = ({ route, navigation }) => {
           )}
           <View
             style={{
-              flex: 1,
+              flex: 0.5,
               backgroundColor: COLORS.primary,
               // opacity: "rgba(255,255,255,0.5)",
 
               marginTop: -5,
-              margin: 10,
+              margin: 5,
               borderRadius: 20,
               alignItems: "center",
               justifyContent: "center",
@@ -448,7 +619,7 @@ const QuizScreen = ({ route, navigation }) => {
           >
             <Text
               style={{
-                fontSize: SIZES.h2,
+                fontSize: SIZES.h3,
                 alignSelf: "center",
                 color: COLORS.white,
                 textAlign: "center",
@@ -491,12 +662,14 @@ const QuizScreen = ({ route, navigation }) => {
           flexDirection: "row",
           justifyContent: "space-around",
           backgroundColor: "white",
+
+          paddingBottom: 20,
         }}
       >
         <View>
           <TouchableOpacity
             disabled={questionIndex == 0 ? true : false}
-            onPress={() => {
+            onPress={async () => {
               if (
                 questionIndex <
                 Object.keys(quizData.chaptersWithQuestions).length - 1
@@ -504,9 +677,11 @@ const QuizScreen = ({ route, navigation }) => {
                 // console.log(questionID);
                 setQuestionIndex(--questionIndex);
 
-                setQuestionID(quizData.chaptersWithQuestions[questionIndex].id);
+                setQuestionID(() => {
+                  return quizData.chaptersWithQuestions[questionIndex].id;
+                });
 
-                fetchOptions();
+                // await fetchOptions();
               }
             }}
           >
@@ -570,6 +745,7 @@ const QuizScreen = ({ route, navigation }) => {
                 })
                 .then((res) => {
                   if (res.data.CorrectAnswer.id == value) {
+                    setAnswerID(res.data.CorrectAnswer.id); //Temp
                     //alert("Correct");
                     updateDB(questionID, value);
                     dispatch(
@@ -594,9 +770,9 @@ const QuizScreen = ({ route, navigation }) => {
                       Object.keys(quizData.chaptersWithQuestions).length - 1
                     ) {
                       setQuestionIndex(++questionIndex);
-                      setQuestionID(
-                        quizData.chaptersWithQuestions[questionIndex].id
-                      );
+                      setQuestionID(() => {
+                        return quizData.chaptersWithQuestions[questionIndex].id;
+                      });
                       // setCounterKey((prevKey) => prevKey + 1);
                     } else {
                       navigation.reset({
@@ -629,9 +805,9 @@ const QuizScreen = ({ route, navigation }) => {
                       Object.keys(quizData.chaptersWithQuestions).length - 1
                     ) {
                       setQuestionIndex(++questionIndex);
-                      setQuestionID(
-                        quizData.chaptersWithQuestions[questionIndex].id
-                      );
+                      setQuestionID(() => {
+                        return quizData.chaptersWithQuestions[questionIndex].id;
+                      });
                       setCounterKey((prevKey) => prevKey + 1);
                     } else {
                       navigation.reset({
@@ -672,7 +848,8 @@ const QuizScreen = ({ route, navigation }) => {
           {Object.keys(quizData.chaptersWithQuestions).length}
         </Text>
         <View style={styles.timer}>
-          <CountdownCircleTimer
+          {/* Old Timer */}
+          {/* <CountdownCircleTimer
             //key={counterKey}
             onComplete={() => {
               if (
@@ -709,14 +886,36 @@ const QuizScreen = ({ route, navigation }) => {
                 </Text>
               </>
             )}
-          </CountdownCircleTimer>
+          </CountdownCircleTimer> */}
+          <CountDown
+            until={parseInt(count)}
+            onChange={() => {
+              dispatch(setTimer(timerValue - 1));
+              storeData(String(timerValue));
+            }}
+            //onFinish={() => alert("finished")}
+            // onPress={() => {
+            //   console.log("userAnswer :  " + options.userAnswerID);
+            //   console.log("correctAnswerID :  " + options.correctAnswerID);
+            // }}
+            timeToShow={["M", "S"]}
+            digitStyle={{
+              backgroundColor: COLORS.primary,
+              borderWidth: 2,
+              borderColor: COLORS.primary,
+            }}
+            digitTxtStyle={{ color: "white", fontSize: 30 }}
+            size={20}
+            running={running}
+            key={key}
+          />
         </View>
         <TouchableOpacity
           style={{ alignSelf: "center" }}
           onPress={async () => {
             await axios({
               method: "put",
-              url: `${webURL}/api/saveQuestion `,
+              url: `${webURL}/api/saveQuestion`,
               headers: {
                 Authorization: `Bearer ${user.token}`,
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -738,7 +937,7 @@ const QuizScreen = ({ route, navigation }) => {
                 alert("Added To Favourites");
               })
               .catch((err) => {
-                console.log("Error", err.response);
+                console.log("Error", err.response.data);
               });
           }}
         >
@@ -777,5 +976,41 @@ const styles = StyleSheet.create({
   optionsContainer: {
     marginBottom: 3,
     flex: 1,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  openButton: {
+    backgroundColor: "#F194FF",
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
   },
 });

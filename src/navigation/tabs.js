@@ -1,12 +1,12 @@
 import React from "react";
 import { View, Image, TouchableOpacity, Text, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, AntDesign } from "@expo/vector-icons";
 import {
   createBottomTabNavigator,
   BottomTabBar,
 } from "@react-navigation/bottom-tabs";
 
-import { Home, Cart, Profile, Favourites } from "../screens";
+import { Home, Profile, Favourites, Terms } from "../screens";
 import { COLORS } from "../constants";
 
 const Tab = createBottomTabNavigator();
@@ -38,6 +38,19 @@ const Tabs = () => {
             <Ionicons
               name="heart"
               size={24}
+              color={focused ? COLORS.primary : COLORS.black}
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Terms"
+        component={Terms}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <AntDesign
+              name="database"
+              size={20}
               color={focused ? COLORS.primary : COLORS.black}
             />
           ),

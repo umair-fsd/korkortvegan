@@ -42,14 +42,17 @@ const FinalResultScreen = ({ route, navigation }) => {
       .catch((err) => console.log(err));
   };
   const renderOverView = ({ item }) => (
-    <RenderOverView
-      imgURL={item.imgURL}
-      question={item.question}
-      category={item.category}
-      status={item.status}
-      question_id={item.question_id}
-      chapter_id={item.chapter_id}
-    />
+    console.log(item.id),
+    (
+      <RenderOverView
+        imgURL={item.imgURL}
+        question={item.question}
+        category={item.category}
+        status={item.status}
+        question_id={item.question_id}
+        chapter_id={item.chapter_id}
+      />
+    )
   );
   const updateDB = async () => {
     const values = reduxState.reduce((r, c) => Object.assign(r, c), {});

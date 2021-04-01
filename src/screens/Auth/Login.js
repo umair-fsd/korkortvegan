@@ -6,6 +6,7 @@ import {
   Dimensions,
   Image,
   TextInput,
+  ActivityIndicator,
 } from "react-native";
 import { Button } from "react-native-paper";
 import { COLORS, SIZES } from "../../constants";
@@ -17,11 +18,40 @@ import { initUser, emptyCounters, setPagingStatus } from "../../redux/actions";
 
 const Login = ({ navigation }) => {
   const [email, setEmail] = useState("");
+  const [isdisabled, setIsDisabled] = useState(true);
   const [password, setPassword] = useState("");
   const user = useSelector((state) => state.user);
+  const [loading, setLoading] = useState(false);
   const webURL = useSelector((state) => state.webURL);
   const dispatch = useDispatch();
   const renderLoginForm = () => {
+    useEffect(() => {
+      demoLogin();
+    }, []);
+    const demoLogin = async () => {
+      await axios
+        .post(`${webURL}/api/login`, {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          email: "demo@user.com",
+          password: "khs8AADJYZ",
+        })
+        .then(async (res) => {
+          console.log(res.status);
+          res.status == 200 ? console.log("Demo Account Logged In") : null;
+          dispatch(
+            initUser({
+              user_id: res.data.user_id,
+              token: res.data.token,
+              email,
+              firstName: "John",
+              lastName: "Doe",
+            })
+          );
+          setIsDisabled(false);
+        });
+    };
     return (
       <>
         <View style={styles.topView}>
@@ -59,75 +89,72 @@ const Login = ({ navigation }) => {
               setPassword(v);
             }}
           />
+          {loading == true ? (
+            <ActivityIndicator size={"large"} color={COLORS.primary} />
+          ) : null}
           <Button
             style={styles.btnStyle}
             mode={"outlined"}
             onPress={async () => {
-              await axios
-                .post(`${webURL}/api/login`, {
-                  headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                  },
-                  email,
-                  password,
-                })
-                .then((res) => {
-                  res.status == 200 ? alert("Welcome") : null;
-                  dispatch(
-                    initUser({
-                      user_id: res.data.user_id,
-                      token: res.data.token,
-                      email,
-                      firstName: "John",
-                      lastName: "Doe",
-                    })
-                  );
-                  setEmail("");
-                  setPassword("");
-                  navigation.reset({
-                    routes: [{ name: "Home" }],
+              if (email == "") {
+                alert("Email Cannot Be Empty!");
+              } else if (password == "") {
+                alert("Password Cannot Be Empty");
+              } else {
+                setLoading(true);
+                await axios
+                  .post(`${webURL}/api/login`, {
+                    headers: {
+                      "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    email,
+                    password,
+                  })
+                  .then((res) => {
+                    res.status == 200 ? alert("Welcome") : null;
+                    dispatch(
+                      initUser({
+                        user_id: res.data.user_id,
+                        token: res.data.token,
+                        email,
+                        firstName: "John",
+                        lastName: "Doe",
+                      })
+                    );
+                    setEmail("");
+                    setPassword("");
+                    setLoading(false);
+                    navigation.reset({
+                      routes: [{ name: "Home" }],
+                    });
+                  })
+                  .catch((err) => {
+                    setLoading(false);
+                    console.log(err);
+                    alert("Invalid Username / Password");
                   });
-                })
-                .catch((err) => {
-                  console.log(err);
-                  alert("Invalid Username / Password");
-                });
+              }
             }}
           >
             <Text style={{ color: COLORS.white, fontSize: SIZES.h3 }}>
               Login
             </Text>
           </Button>
+
           <Button
-            style={styles.btnStyle}
+            disabled={isdisabled}
+            style={{
+              ...styles.btnStyle,
+              backgroundColor: isdisabled == true ? "grey" : COLORS.primary,
+            }}
             mode={"outlined"}
             onPress={async () => {
+              setLoading(true);
               await axios
-                .post(`${webURL}/api/login`, {
+                .get(webURL + `/api/getDemoQuestions`, {
                   headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
+                    Authorization: `Bearer ${user.token}`,
                   },
-                  email: "demo@user.com",
-                  password: "khs8AADJYZ",
-                })
-                .then(async (res) => {
-                  res.status == 200 ? console.log("Welcome") : null;
-                  dispatch(
-                    initUser({
-                      user_id: res.data.user_id,
-                      token: res.data.token,
-                      email,
-                      firstName: "John",
-                      lastName: "Doe",
-                    })
-                  );
-                  setEmail("");
-                  setPassword("");
-                  return await axios.get(webURL + `/api/getDemoQuestions`, {
-                    headers: {
-                      Authorization: `Bearer ${user.token}`,
-                    },
-                  });
                 })
                 .then((res) => {
                   ////initialized local question status array
@@ -144,6 +171,7 @@ const Login = ({ navigation }) => {
                   } ///end
                   dispatch(emptyCounters()); //reset counters
                   dispatch(setPagingStatus(array)); //pushing status array with all null
+                  setLoading(false);
                   navigation.push("DemoQuizScreen", {
                     quizData: res.data,
                     qID: res.data.DemoQuestions[0].id,

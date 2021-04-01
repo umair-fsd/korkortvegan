@@ -12,6 +12,7 @@ import {
   DemoQuizScreen,
   FinalResultScreen,
   DemoResultScreen,
+  Terms,
   ///Remove on Final Build
   TestScreen,
 } from "./src/screens";
@@ -34,13 +35,14 @@ export default function App() {
           screenOptions={{
             headerShown: false,
           }}
-          initialRouteName={"TestScreen"}
+          initialRouteName={"Login"}
         >
           <Stack.Screen name="Home" component={Tabs} />
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="QuizScreen" component={QuizScreen} />
           <Stack.Screen name="ResultScreen" component={ResultScreen} />
           <Stack.Screen name="DemoResultScreen" component={DemoResultScreen} />
+          <Stack.Screen name="Terms" component={Terms} />
           <Stack.Screen
             name="FinalResultScreen"
             component={FinalResultScreen}

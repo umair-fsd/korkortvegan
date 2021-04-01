@@ -62,7 +62,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
   }, []);
   useEffect(() => {
     fetchOptions();
-  }, [questionID, userProgress]);
+  }, [questionID]);
 
   ////UpdateDB////
 
@@ -135,7 +135,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
           setLoading(true);
           setQuestionIndex(index);
           setQuestionID(quizData.DemoQuestions[index].id);
-          await fetchOptions();
+          // await fetchOptions();
           console.log("index is :" + index);
           console.log("item is :" + item.question);
           console.log("questionID is :" + questionID);
@@ -196,7 +196,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
     if (!questions == "") setQuestionID(questions.DemoQuestions[0].id);
     // console.log(questions.DemoQuestions);
 
-    fetchOptions();
+    //fetchOptions();
   };
 
   const fetchOptions = async () => {
@@ -389,8 +389,8 @@ const FinalQuizScreen = ({ route, navigation }) => {
             <Image
               source={require("../../../assets/placeHolder.jpeg")}
               style={{
-                width: 130,
-                height: 130,
+                width: 200,
+                height: 200,
                 // marginTop: 5,
 
                 resizeMode: "contain",
@@ -403,8 +403,8 @@ const FinalQuizScreen = ({ route, navigation }) => {
                 uri: webURL + quizData.DemoQuestions[questionIndex].imgURL,
               }}
               style={{
-                width: 130,
-                height: 130,
+                width: 200,
+                height: 200,
                 marginTop: 5,
                 bottom: 5,
                 resizeMode: "contain",
@@ -414,12 +414,12 @@ const FinalQuizScreen = ({ route, navigation }) => {
           )}
           <View
             style={{
-              flex: 1,
+              flex: 0.5,
               backgroundColor: COLORS.primary,
               // opacity: "rgba(255,255,255,0.5)",
 
               marginTop: -5,
-              margin: 10,
+              margin: 5,
               borderRadius: 20,
               alignItems: "center",
               justifyContent: "center",
@@ -438,7 +438,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
           >
             <Text
               style={{
-                fontSize: SIZES.h2,
+                fontSize: SIZES.h3,
                 alignSelf: "center",
                 color: COLORS.white,
                 textAlign: "center",
@@ -481,6 +481,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
           flexDirection: "row",
           justifyContent: "space-around",
           backgroundColor: "white",
+          paddingBottom: 20,
         }}
       >
         <View>
@@ -496,13 +497,14 @@ const FinalQuizScreen = ({ route, navigation }) => {
 
                 setQuestionID(quizData.DemoQuestions[questionIndex].id);
 
-                fetchOptions();
+                //  fetchOptions();
               }
             }}
           >
-            <FontAwesome5 name="backward" size={24} color={COLORS.primary} />
+            <FontAwesome5 name="backward" size={30} color={COLORS.primary} />
           </TouchableOpacity>
         </View>
+
         <View>
           <TouchableOpacity
             onPress={async () => {
@@ -591,70 +593,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
                 });
             }}
           >
-            <Text
-              style={{
-                borderColor: COLORS.primary,
-                borderWidth: 1,
-                padding: 10,
-                borderRadius: 10,
-                bottom: 5,
-                backgroundColor: COLORS.primary,
-                color: "white",
-              }}
-            >
-              Submit
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View>
-          <TouchableOpacity
-            onPress={() => {
-              if (
-                questionIndex <
-                Object.keys(quizData.DemoQuestions).length - 1
-              ) {
-                dispatch(
-                  setProgress({
-                    [questionID]: null,
-                  })
-                );
-                // updateDB(questionID, null);
-                dispatch(
-                  updatePagingStatus([
-                    {
-                      question: questionID,
-                      status: null,
-                    },
-                  ])
-                );
-
-                console.log(userProgress);
-                // console.log(questionID);
-                setQuestionIndex(++questionIndex);
-
-                setQuestionID(quizData.DemoQuestions[questionIndex].id);
-
-                fetchOptions();
-                setCounterKey((prevKey) => prevKey + 1);
-                dispatch(setUnAnswered());
-              } else {
-                console.log(reduxUnAnswered);
-
-                dispatch(
-                  setProgress({
-                    [questionID]: null,
-                  })
-                );
-                //  updateDB(questionID, null);
-                dispatch(setUnAnswered());
-
-                navigation.reset({
-                  routes: [{ name: "DemoResultScreen" }],
-                });
-              }
-            }}
-          >
-            <FontAwesome5 name="forward" size={24} color={COLORS.primary} />
+            <FontAwesome5 name="forward" size={30} color={COLORS.primary} />
           </TouchableOpacity>
         </View>
       </View>

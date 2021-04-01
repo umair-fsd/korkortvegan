@@ -143,11 +143,25 @@ const DemoResultScreen = ({ route, navigation }) => {
         </TouchableOpacity> */}
       </View>
       <View style={styles.overView}>
-        <FlatList
-          data={overViewData}
-          keyExtractor={(item) => item.question_id.toString()}
-          renderItem={renderOverView}
-        />
+        <TouchableOpacity
+          onPress={() => {
+            navigation.replace("Login");
+          }}
+        >
+          <Text
+            style={{
+              marginTop: 20,
+              backgroundColor: COLORS.primary,
+              color: COLORS.white,
+              padding: 10,
+              paddingHorizontal: 20,
+              textAlign: "center",
+              borderRadius: 5,
+            }}
+          >
+            Back
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -179,6 +193,7 @@ const styles = StyleSheet.create({
   overView: {
     flex: 1,
     marginTop: 2,
+    alignItems: "center",
   },
   cardStyle: {
     flex: 1,

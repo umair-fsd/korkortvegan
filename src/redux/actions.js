@@ -12,6 +12,10 @@ export const setPagingStatus = (data) => ({
   type: "SET_PAGING",
   data,
 });
+export const setOptions = (data) => ({
+  type: "SET_OPTIONS",
+  data,
+});
 export const updatePagingStatus = (data) => ({
   type: "UPDATE_PAGING",
   data,
@@ -29,4 +33,8 @@ export const setUnAnswered = () => ({
 export const initUser = (user) => ({
   type: "INIT_USER",
   data: user,
+});
+export const setTimer = (data) => ({
+  type: "SET_TIMER",
+  data: data,
 });

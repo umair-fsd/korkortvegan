@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { RadioButton } from "react-native-paper";
+import CountDown from "react-native-countdown-component";
 
 import {
   StyleSheet,
@@ -39,7 +40,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
   const webURL = useSelector((state) => state.webURL);
   const reduxState = useSelector((state) => state.userProgress);
   const pagingStatus = useSelector((state) => state.pagingStatus);
-  const { quizData, chapterName, id, qID, message } = route.params;
+  const { quizData, chapterName, id, qID, message, doneUntil } = route.params;
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState("");
   const [options, setOptions] = useState("");
@@ -47,7 +48,9 @@ const FinalQuizScreen = ({ route, navigation }) => {
   const [isSelected, setIsSelected] = useState(false);
   const [submit, canSubmit] = useState(false);
   const [skip, canSkip] = useState(false);
-  var [questionIndex, setQuestionIndex] = useState(0);
+  var [questionIndex, setQuestionIndex] = useState(
+    doneUntil == -1 || doneUntil == null ? 0 : doneUntil
+  );
   const [questionID, setQuestionID] = useState(qID);
   const [counterKey, setCounterKey] = useState(0);
   const [value, setValue] = React.useState("");
@@ -59,6 +62,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
   //////////USE EFFECTS////////
 
   useEffect(() => {
+    setCounterKey(counterKey + 1);
     console.log(message);
     message != null ? alert(message) : console.log(message);
 
@@ -66,7 +70,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
   }, []);
   useEffect(() => {
     fetchOptions();
-  }, [questionID, userProgress]);
+  }, [questionID]);
 
   ////UpdateDB////
 
@@ -346,7 +350,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
         >
           <Ionicons
             onPress={() => {
-              navigation.push("Home");
+              navigation.replace("Home");
             }}
             style={{ alignSelf: "center", left: 5 }}
             name="arrow-back-circle-outline"
@@ -427,8 +431,8 @@ const FinalQuizScreen = ({ route, navigation }) => {
             <Image
               source={require("../../../assets/placeHolder.jpeg")}
               style={{
-                width: 130,
-                height: 130,
+                width: 200,
+                height: 200,
                 // marginTop: 5,
 
                 resizeMode: "contain",
@@ -441,8 +445,8 @@ const FinalQuizScreen = ({ route, navigation }) => {
                 uri: webURL + quizData.FinalExamQuestions[questionIndex].imgURL,
               }}
               style={{
-                width: 130,
-                height: 130,
+                width: 200,
+                height: 200,
                 marginTop: 5,
                 bottom: 5,
                 resizeMode: "contain",
@@ -452,12 +456,12 @@ const FinalQuizScreen = ({ route, navigation }) => {
           )}
           <View
             style={{
-              flex: 1,
+              flex: 0.5,
               backgroundColor: COLORS.primary,
               // opacity: "rgba(255,255,255,0.5)",
 
               marginTop: -5,
-              margin: 10,
+              margin: 5,
               borderRadius: 20,
               alignItems: "center",
               justifyContent: "center",
@@ -476,7 +480,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
           >
             <Text
               style={{
-                fontSize: SIZES.h2,
+                fontSize: SIZES.h3,
                 alignSelf: "center",
                 color: COLORS.white,
                 textAlign: "center",
@@ -534,7 +538,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
 
                 setQuestionID(quizData.FinalExamQuestions[questionIndex].id);
 
-                fetchOptions();
+                // fetchOptions();
               }
             }}
           >
@@ -633,19 +637,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
                 });
             }}
           >
-            <Text
-              style={{
-                borderColor: COLORS.primary,
-                borderWidth: 1,
-                padding: 10,
-                borderRadius: 10,
-                bottom: 5,
-                backgroundColor: COLORS.primary,
-                color: "white",
-              }}
-            >
-              Submit
-            </Text>
+            <FontAwesome5 name="forward" size={40} color={COLORS.primary} />
           </TouchableOpacity>
         </View>
         <View>
@@ -676,7 +668,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
 
                 setQuestionID(quizData.FinalExamQuestions[questionIndex].id);
 
-                fetchOptions();
+                // fetchOptions();
                 setCounterKey((prevKey) => prevKey + 1);
                 dispatch(setUnAnswered());
               } else {
@@ -723,7 +715,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
           {questionIndex + 1}/{Object.keys(quizData.FinalExamQuestions).length}
         </Text>
         <View style={styles.timer}>
-          <CountdownCircleTimer
+          {/* <CountdownCircleTimer
             //key={counterKey}
             onComplete={() => {
               if (
@@ -760,7 +752,24 @@ const FinalQuizScreen = ({ route, navigation }) => {
                 </Text>
               </>
             )}
-          </CountdownCircleTimer>
+          </CountdownCircleTimer> */}
+          <CountDown
+            until={3000}
+            digitStyle={{
+              backgroundColor: COLORS.primary,
+              borderWidth: 2,
+              borderColor: COLORS.primary,
+            }}
+            digitTxtStyle={{ color: "white", fontSize: 30 }}
+            size={20}
+            // onChange={}
+            onFinish={() => alert("finished")}
+            //onPress={() => alert("Timer Stopped")}
+            timeToShow={["M", "S"]}
+            size={20}
+            running={true}
+            //key={counterKey}
+          />
         </View>
         <AntDesign
           name="heart"

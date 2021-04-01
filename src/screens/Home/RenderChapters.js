@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setPagingStatus, emptyCounters } from "../../redux/actions";
 
 const Chapter = ({ chapterName, id }) => {
+  const [loading, setLoading] = useState(false);
   const webURL = useSelector((state) => state.webURL);
   const user = useSelector((state) => state.user);
   const navigation = useNavigation();
@@ -43,10 +44,12 @@ const Chapter = ({ chapterName, id }) => {
       >
         {chapterName}
       </Text>
+
       <TouchableOpacity
-        onPress={() => {
+        onPress={async () => {
+          setLoading(true);
           try {
-            axios
+            await axios
               .get(
                 `${webURL}/api/chaptersWithQuestions/${user.user_id}/${id}`,
                 {
@@ -75,7 +78,7 @@ const Chapter = ({ chapterName, id }) => {
                 } ///end
                 dispatch(emptyCounters()); //reset counters
                 dispatch(setPagingStatus(array)); //pushing status array with all null
-
+                setLoading(false);
                 navigation.push("QuizScreen", {
                   quizData: res.data,
                   chapterName: chapterName,
@@ -92,16 +95,24 @@ const Chapter = ({ chapterName, id }) => {
           }
         }}
       >
-        <Text
-          style={{
-            marginRight: 10,
-            backgroundColor: COLORS.white,
-            padding: 8,
-            borderRadius: 5,
-          }}
-        >
-          Start Test
-        </Text>
+        {loading == true ? (
+          <ActivityIndicator
+            size={"large"}
+            color={COLORS.white}
+            style={{ right: 10 }}
+          />
+        ) : (
+          <Text
+            style={{
+              marginRight: 10,
+              backgroundColor: COLORS.white,
+              padding: 8,
+              borderRadius: 5,
+            }}
+          >
+            Start Test
+          </Text>
+        )}
       </TouchableOpacity>
     </View>
   );

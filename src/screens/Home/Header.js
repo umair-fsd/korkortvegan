@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
   View,
   StatusBar,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { SIZES, COLORS } from "../../constants";
 import { Header as HeaderTop, Title, Left, Right } from "native-base";
@@ -14,6 +15,7 @@ import { useSelector } from "react-redux";
 const Header = ({ navigation }) => {
   const webURL = useSelector((state) => state.webURL);
   const user = useSelector((state) => state.user);
+  const [loading, setLoading] = useState(false);
   return (
     <HeaderTop
       style={{
@@ -38,6 +40,7 @@ const Header = ({ navigation }) => {
       <Right>
         <TouchableOpacity
           onPress={() => {
+            setLoading(true);
             try {
               axios
                 .get(webURL + `/api/getFinalExamQuestions/${user.user_id}`, {
@@ -47,7 +50,8 @@ const Header = ({ navigation }) => {
                 })
                 .then((res) => {
                   console.log(res.data.message);
-                  navigation.push("FinalQuizScreen", {
+                  setLoading(false);
+                  navigation.navigate("FinalQuizScreen", {
                     quizData: res.data,
                     message: res.data.message,
                     qID: res.data.FinalExamQuestions[0].id,
@@ -71,7 +75,11 @@ const Header = ({ navigation }) => {
               fontWeight: "bold",
             }}
           >
-            Final Test
+            {loading == true ? (
+              <ActivityIndicator size={"small"} color={"white"} />
+            ) : (
+              <Text>Final Test</Text>
+            )}
           </Text>
         </TouchableOpacity>
       </Right>

@@ -1,6 +1,7 @@
 import Login from "./Auth/Login";
 import Home from "./Home/Home";
 import Profile from "./Profile/Profile";
+import Terms from "./Terms/Terms";
 import QuizScreen from "./Quiz/QuizScreen";
 import FinalQuizScreen from "../screens/FinalQuiz/FinalQuizScreen";
 import DemoQuizScreen from "../screens/DemoQuiz/DemoQuizScreen";
@@ -24,6 +25,7 @@ export {
   FinalResultScreen,
   DemoResultScreen,
   DemoQuizScreen,
+  Terms,
   ///Remove On Final Build
   TestScreen,
 };
