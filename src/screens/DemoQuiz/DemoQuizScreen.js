@@ -22,7 +22,8 @@ import {
 } from "@expo/vector-icons";
 import * as Speech from "expo-speech";
 import { SIZES, COLORS } from "../../constants";
-import { CountdownCircleTimer } from "react-native-countdown-circle-timer";
+import { CountdownCircleTimer } from "react-native-countdown-circle-timer"; //Old Timer Lib
+import CountDown from "react-native-countdown-component";
 import { Header, Title, Right, Left } from "native-base";
 import {
   setProgress,
@@ -202,7 +203,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
   const fetchOptions = async () => {
     setLoading(true);
     const res = await axios.get(
-      `${webURL}/api/getAnswersForQuestion/${questionID}`,
+      `${webURL}/api/getAnswersForQuestion/${questionID}/${user.user_id}`,
       {
         headers: {
           Authorization: `Bearer ${user.token}`,
@@ -620,7 +621,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
           {questionIndex + 1}/{Object.keys(quizData.DemoQuestions).length}
         </Text>
         <View style={styles.timer}>
-          <CountdownCircleTimer
+          {/*  <CountdownCircleTimer
             //key={counterKey}
             onComplete={() => {
               if (
@@ -657,7 +658,29 @@ const FinalQuizScreen = ({ route, navigation }) => {
                 </Text>
               </>
             )}
-          </CountdownCircleTimer>
+          </CountdownCircleTimer> */}
+          <CountDown
+            until={3000}
+            // onChange={() => {
+            //   dispatch(setTimer(timerValue - 1));
+            //   storeData(String(timerValue));
+            // }}
+            //onFinish={() => alert("finished")}
+            // onPress={() => {
+            //   console.log("userAnswer :  " + options.userAnswerID);
+            //   console.log("correctAnswerID :  " + options.correctAnswerID);
+            // }}
+            timeToShow={["M", "S"]}
+            digitStyle={{
+              backgroundColor: COLORS.primary,
+              borderWidth: 2,
+              borderColor: COLORS.primary,
+            }}
+            digitTxtStyle={{ color: "white", fontSize: 30 }}
+            size={20}
+            // running={running}
+            // key={key}
+          />
         </View>
         <AntDesign
           onPress={() => alert("Not available in demo")}

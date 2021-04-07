@@ -207,7 +207,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
   const fetchOptions = async () => {
     setLoading(true);
     const res = await axios.get(
-      `${webURL}/api/getAnswersForQuestion/${questionID}`,
+      `${webURL}/api/getAnswersForQuestion/${questionID}/${user.user_id}`,
       {
         headers: {
           Authorization: `Bearer ${user.token}`,

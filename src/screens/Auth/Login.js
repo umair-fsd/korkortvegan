@@ -172,6 +172,7 @@ const Login = ({ navigation }) => {
                   dispatch(emptyCounters()); //reset counters
                   dispatch(setPagingStatus(array)); //pushing status array with all null
                   setLoading(false);
+                  res.data.DemoQuestions[0].id;
                   navigation.push("DemoQuizScreen", {
                     quizData: res.data,
                     qID: res.data.DemoQuestions[0].id,

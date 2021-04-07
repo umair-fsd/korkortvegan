@@ -8,6 +8,9 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Header } from "native-base";
+import { useNavigation } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
+import { emptyCounters, setPagingStatus } from "../../redux/actions";
 import { COLORS, SIZES } from "../../constants";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -15,6 +18,8 @@ import { Ionicons, Entypo } from "@expo/vector-icons";
 import qs from "qs";
 
 const Favourites = () => {
+  const dispatch = useDispatch();
+  const navigation = useNavigation();
   const user = useSelector((state) => state.user);
   const webURL = useSelector((state) => state.webURL);
   const [loading, setLoading] = useState(true);
@@ -65,7 +70,58 @@ const Favourites = () => {
             borderRadius: 10,
           }}
         >
-          <TouchableOpacity style={{ alignItems: "center" }}>
+          <TouchableOpacity
+            style={{ alignItems: "center" }}
+            onPress={async () => {
+              setLoading(true);
+              try {
+                await axios
+                  .get(
+                    `${webURL}/api/chaptersWithQuestions/${user.user_id}/${item.chapter_id}`,
+                    {
+                      headers: {
+                        Authorization: `Bearer ${user.token}`,
+                      },
+                    }
+                  )
+                  .then((res) => {
+                    var doneUntil = res.data.chaptersWithQuestions.findIndex(
+                      (s) => s.id == item.id
+                    );
+                    console.log("DoneUntill: " + doneUntil);
+                    var array = [];
+
+                    ////initialized local question status array
+                    for (
+                      let i = 0;
+                      i < Object.values(res.data.chaptersWithQuestions).length;
+                      i++
+                    ) {
+                      array.push({
+                        question: i,
+                        status: null,
+                      });
+                    } ///end
+                    dispatch(emptyCounters()); //reset counters
+                    dispatch(setPagingStatus(array)); //pushing status array with all null
+                    setLoading(false);
+                    navigation.push("QuizScreen", {
+                      quizData: res.data,
+                      chapterName: "Kapitel " + item.chapter_id,
+                      id: item.chapter_id,
+                      doneUntil,
+                      qID:
+                        res.data.chaptersWithQuestions[
+                          doneUntil == -1 ? 0 : doneUntil
+                        ].id,
+                    });
+                  });
+              } catch (error) {
+                console.log(error);
+                // alert("Server is not responding, Please try again later");
+              }
+            }}
+          >
             <Ionicons
               name="caret-forward-circle-sharp"
               size={30}

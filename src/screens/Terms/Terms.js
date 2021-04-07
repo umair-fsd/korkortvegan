@@ -6,6 +6,7 @@ import {
   View,
   ActivityIndicator,
   TouchableOpacity,
+  TextInput,
 } from "react-native";
 import { Header } from "native-base";
 import { List } from "react-native-paper";
@@ -19,31 +20,22 @@ const Terms = () => {
   const webURL = useSelector((state) => state.webURL);
   const [loading, setLoading] = useState(true);
   const [nodata, setNoData] = useState(false);
-  const [savedQuestions, setSavedQuestions] = useState("");
-  const termsData = [
-    {
-      id: 1,
-      title: "First Title",
-      desc: "A Quick Brown Fox Jumps Over The Lazy Dog",
-    },
-    {
-      id: 2,
-      title: "Second Title",
-      desc: "A Quick Brown Fox Jumps Over The Lazy Dog",
-    },
-    {
-      id: 3,
-      title: "Third Title",
-      desc: "A Quick Brown Fox Jumps Over The Lazy Dog",
-    },
-    {
-      id: 4,
-      title: "Fourth Title",
-      desc: "A Quick Brown Fox Jumps Over The Lazy Dog",
-    },
-  ];
+  const [terms, setTerms] = useState("");
+  const [searchData, setSearchData] = useState("");
+  const handleSearch = (value) => {
+    const newData = searchData.termList.filter((item) => {
+      const itemData = ` ${item.title.toUpperCase()} ${item.desc}`;
 
-  const fetchSavedQuerstions = async () => {
+      const textData = value.toUpperCase();
+
+      return itemData.indexOf(textData) > -1;
+    });
+
+    setTerms({
+      termList: newData,
+    });
+  };
+  const fetchTerms = async () => {
     await axios
       .get(`${webURL}/api/getTerms`, {
         headers: {
@@ -52,7 +44,8 @@ const Terms = () => {
       })
       .then((res) => {
         Object.keys(res.data).length == 0 ? setNoData(true) : setNoData(nodata);
-        setSavedQuestions(res.data);
+        setTerms(res.data);
+        setSearchData(res.data);
         setLoading(false);
       })
       .catch((err) => {
@@ -79,8 +72,7 @@ const Terms = () => {
   );
 
   useEffect(() => {
-    fetchSavedQuerstions();
-    // console.log(savedQuestions.termList);
+    fetchTerms();
   }, []);
   return (
     <View style={styles.container}>
@@ -124,10 +116,29 @@ const Terms = () => {
           </Text>
         </View>
       ) : nodata == false ? (
-        <View>
+        <View style={{ flex: 1 }}>
+          <View>
+            <TextInput
+              onChangeText={(value) => {
+                handleSearch(value);
+              }}
+              style={{
+                borderWidth: 1,
+                width: "80%",
+                alignSelf: "center",
+                marginVertical: 10,
+                fontSize: SIZES.h2,
+                padding: 10,
+                borderRadius: 10,
+                borderColor: COLORS.primary,
+                color: COLORS.primary,
+              }}
+              placeholder={"Search"}
+            />
+          </View>
           <FlatList
-            data={termsData}
-            keyExtractor={(item, index) => item.title}
+            data={terms.termList}
+            keyExtractor={(item) => item.id.toString()}
             renderItem={renderItem}
           />
         </View>
@@ -150,7 +161,7 @@ const Terms = () => {
               margin: 0,
             }}
           >
-            No Saved Questions...
+            No Saved Terms...
           </Text>
         </View>
       )}
