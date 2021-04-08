@@ -8,23 +8,42 @@ import {
   TouchableOpacity,
   TextInput,
 } from "react-native";
-import { Header } from "native-base";
+import { Header, Right } from "native-base";
 import { List } from "react-native-paper";
 import { COLORS, SIZES } from "../../constants";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { Ionicons, Entypo } from "@expo/vector-icons";
+import { AlphabetList } from "react-native-section-alphabet-list";
 
 const Terms = () => {
+  const [reset, setReset] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const [alphabet, setAlphabet] = useState("");
   const user = useSelector((state) => state.user);
   const webURL = useSelector((state) => state.webURL);
   const [loading, setLoading] = useState(true);
   const [nodata, setNoData] = useState(false);
   const [terms, setTerms] = useState("");
   const [searchData, setSearchData] = useState("");
+  const [key, setKey] = useState(0);
+  let letters = "abcdefghijklmnopqrstuvwxyz".toUpperCase().split("");
+  const handleAlphabetSearch = (value) => {
+    const newData = searchData.termList.filter((item) => {
+      const itemData = ` ${item.title.charAt(0).toUpperCase()}`;
+
+      const textData = value.toUpperCase();
+
+      return itemData.indexOf(textData) > -1;
+    });
+
+    setTerms({
+      termList: newData,
+    });
+  };
   const handleSearch = (value) => {
     const newData = searchData.termList.filter((item) => {
-      const itemData = ` ${item.title.toUpperCase()} ${item.desc}`;
+      const itemData = ` ${item.title.toUpperCase()}`;
 
       const textData = value.toUpperCase();
 
@@ -71,9 +90,49 @@ const Terms = () => {
     </View>
   );
 
+  const renderAlphabates = ({ item }) => (
+    <TouchableOpacity
+      onPress={() => {
+        if (item !== alphabet) {
+          setAlphabet(item);
+
+          handleAlphabetSearch(alphabet);
+          setKey(key + 1);
+          setReset(true);
+        } else {
+          setInputValue("");
+          setAlphabet("");
+          handleSearch("");
+          setReset(false);
+        }
+      }}
+    >
+      <View
+        style={{
+          ...styles.cardStyle,
+          padding: 5,
+          borderRadius: 30,
+          backgroundColor: alphabet == item ? COLORS.primary : "white",
+        }}
+      >
+        <Text
+          style={{
+            textAlign: "center",
+            color: alphabet == item ? COLORS.white : "black",
+          }}
+        >
+          {item}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+
   useEffect(() => {
     fetchTerms();
   }, []);
+  useEffect(() => {
+    !alphabet == "" ? handleAlphabetSearch(alphabet) : null;
+  }, [alphabet]);
   return (
     <View style={styles.container}>
       <Header
@@ -87,10 +146,39 @@ const Terms = () => {
             color: COLORS.white,
             fontSize: SIZES.h2,
             alignSelf: "center",
+            right: -50,
           }}
         >
           Terms
         </Text>
+
+        <View
+          style={{
+            width: 100,
+            justifyContent: "center",
+            alignItems: "center",
+            right: 20,
+          }}
+        >
+          {/* <TouchableOpacity
+            onPress={() => {
+              setInputValue("");
+              setAlphabet("");
+              handleSearch("");
+            }}
+          >
+            <Text
+              style={{
+                color: "red",
+                backgroundColor: "white",
+                padding: 4,
+                borderRadius: 5,
+              }}
+            >
+              Clear Filter
+            </Text>
+          </TouchableOpacity> */}
+        </View>
       </Header>
       {loading == true ? (
         <View
@@ -119,7 +207,9 @@ const Terms = () => {
         <View style={{ flex: 1 }}>
           <View>
             <TextInput
+              value={inputValue}
               onChangeText={(value) => {
+                setInputValue(value);
                 handleSearch(value);
               }}
               style={{
@@ -136,11 +226,32 @@ const Terms = () => {
               placeholder={"Search"}
             />
           </View>
-          <FlatList
-            data={terms.termList}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderItem}
-          />
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <View style={{ flex: 2 }}>
+              <FlatList
+                data={terms.termList}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderItem}
+                key={key}
+                showsVerticalScrollIndicator={false}
+              />
+            </View>
+            <View style={{ flex: 0.3 }}>
+              <FlatList
+                data={letters}
+                keyExtractor={(item) => item}
+                renderItem={renderAlphabates}
+                showsVerticalScrollIndicator={false}
+              />
+            </View>
+          </View>
         </View>
       ) : (
         <View

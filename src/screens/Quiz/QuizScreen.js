@@ -894,10 +894,25 @@ const QuizScreen = ({ route, navigation }) => {
               storeData(String(timerValue));
             }}
             //onFinish={() => alert("finished")}
-            // onPress={() => {
-            //   console.log("userAnswer :  " + options.userAnswerID);
-            //   console.log("correctAnswerID :  " + options.correctAnswerID);
-            // }}
+            onFinish={async () => {
+              await axios
+                .get(
+                  `${webURL}/api/resetQuestionStatus/${user.user_id}/${id}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${user.token}`,
+                    },
+                  }
+                )
+                .then((res) => {
+                  res.status == 200 ? alert("Time's Up!") : null;
+                  navigation.navigate("Home");
+                })
+                .catch((err) => {
+                  console.log(err);
+                  alert("Cannot reset the progress, Try agin later!");
+                });
+            }}
             timeToShow={["M", "S"]}
             digitStyle={{
               backgroundColor: COLORS.primary,

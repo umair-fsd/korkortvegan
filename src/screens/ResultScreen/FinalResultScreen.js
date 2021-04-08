@@ -6,6 +6,7 @@ import {
   Button,
   TouchableOpacity,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import Header from "./Header";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
@@ -24,9 +25,9 @@ const FinalResultScreen = ({ route, navigation }) => {
   const unAnswered = useSelector((state) => state.unAnswered);
   const user = useSelector((state) => state.user);
   const webURL = useSelector((state) => state.webURL);
+  const [loadingResetProgress, setLoadingResetProgress] = useState(false);
 
   useEffect(() => {
-    console.log("1");
     fetchOverView();
     //updateDB();
   }, []);
@@ -42,47 +43,45 @@ const FinalResultScreen = ({ route, navigation }) => {
       .catch((err) => console.log(err));
   };
   const renderOverView = ({ item }) => (
-    console.log(item.id),
-    (
-      <RenderOverView
-        imgURL={item.imgURL}
-        question={item.question}
-        category={item.category}
-        status={item.status}
-        question_id={item.question_id}
-        chapter_id={item.chapter_id}
-      />
-    )
+    <RenderOverView
+      imgURL={item.imgURL}
+      question={item.question}
+      category={item.category}
+      status={item.status}
+      question_id={item.question_id}
+      chapter_id={item.chapter_id}
+    />
   );
-  const updateDB = async () => {
-    const values = reduxState.reduce((r, c) => Object.assign(r, c), {});
-    const finalResult = {
-      UserProgress: values,
-    };
-    await axios({
-      method: "put",
-      url: "https://stssodra.dimitris.in/api/updateUserProgressFinalExam/1",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      data: qs.stringify({
-        email: "admin@admin.com",
-        password: "admin",
-        answersArray: JSON.stringify(finalResult),
-        doneUntil: 66,
-      }),
-      headers: {
-        "content-type": "application/x-www-form-urlencoded;charset=utf-8",
-      },
-    })
-      .then((res) => {
-        console.log(res.data);
-        dispatch(emptyProgress());
-      })
-      .catch((err) => {
-        console.log("Error", err.response);
-      });
-  };
+
+  // const updateDB = async () => {
+  //   const values = reduxState.reduce((r, c) => Object.assign(r, c), {});
+  //   const finalResult = {
+  //     UserProgress: values,
+  //   };
+  //   await axios({
+  //     method: "put",
+  //     url: "https://stssodra.dimitris.in/api/updateUserProgressFinalExam/1",
+  //     headers: {
+  //       "Content-Type": "application/x-www-form-urlencoded",
+  //     },
+  //     data: qs.stringify({
+  //       email: "admin@admin.com",
+  //       password: "admin",
+  //       answersArray: JSON.stringify(finalResult),
+  //       doneUntil: 66,
+  //     }),
+  //     headers: {
+  //       "content-type": "application/x-www-form-urlencoded;charset=utf-8",
+  //     },
+  //   })
+  //     .then((res) => {
+  //       console.log(res.data);
+  //       dispatch(emptyProgress());
+  //     })
+  //     .catch((err) => {
+  //       console.log("Error", err.response);
+  //     });
+  // };
   return (
     <View style={{ flex: 1 }}>
       <Header navigation={navigation} />
@@ -96,6 +95,50 @@ const FinalResultScreen = ({ route, navigation }) => {
         <Text style={{ fontSize: SIZES.h2, color: COLORS.primary }}>
           Your quiz has been finished!
         </Text>
+        <TouchableOpacity
+          onPress={async () => {
+            setLoadingResetProgress(true);
+            await axios
+              .get(`${webURL}/api/resetQuestionStatusFinal/${user.user_id}`, {
+                headers: {
+                  Authorization: `Bearer ${user.token}`,
+                },
+              })
+              .then((res) => {
+                res.status == 200 ? alert("Progress reset successful! ") : null;
+                setLoadingResetProgress(false);
+              })
+              .catch((err) => {
+                setLoadingResetProgress(false);
+                console.log(err);
+                alert("Cannot reset the progress, Try agin later!");
+              });
+          }}
+        >
+          {loadingResetProgress == true ? (
+            <ActivityIndicator
+              size={"large"}
+              color={COLORS.primary}
+              style={{ right: 10 }}
+            />
+          ) : (
+            <Text
+              style={{
+                marginRight: 10,
+                backgroundColor: COLORS.white,
+                padding: 7,
+                borderRadius: 5,
+                fontSize: 11,
+                borderColor: "red",
+                borderWidth: 1,
+                color: "red",
+                marginTop: 10,
+              }}
+            >
+              Reset Progress
+            </Text>
+          )}
+        </TouchableOpacity>
         <View style={styles.scoreCard}>
           <View>
             <View

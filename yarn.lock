@@ -7203,6 +7203,13 @@ react-is@^17.0.1:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-17.0.1.tgz#5b3531bd76a645a4c9fb6e693ed36419e3301339"
   integrity sha512-NAnt2iGDXohE5LI7uBnLnqvLQMtzhkiAOLXTmv+qnF9Ky7xAPcX8Up/xWIhxvLVGJvuLiNc4xQLtuqDRzb4fSA==
 
+react-native-alphabetflatlist@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/react-native-alphabetflatlist/-/react-native-alphabetflatlist-1.0.5.tgz#a66d564c4874c2461f0b48f1ff10d78126cea6ee"
+  integrity sha512-J6gFjczrVbG146+1lbifg6rY3ij/0it9bntq/SKsQVY7L1nINPL3a9YoThxsrSVsT3ucNhksO1rDx8Ri2Fv4ng==
+  dependencies:
+    prop-types "^15.6.0"
+
 react-native-countdown-circle-timer@^2.5.0:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/react-native-countdown-circle-timer/-/react-native-countdown-circle-timer-2.5.0.tgz#dedfe9cc37e2b642ed8e069ddad8a1dd01dc9a91"
@@ -7273,6 +7280,18 @@ react-native-screens@^2.15.2:
   version "2.18.1"
   resolved "https://registry.yarnpkg.com/react-native-screens/-/react-native-screens-2.18.1.tgz#47b9991c6f762d00d0ed3233e5283d523e859885"
   integrity sha512-r5WZLpmx2hHjC1RgMdPq5YpSU9tEhBpUaZ5M1SUtNIONyiLqQVxabhRCINdebIk4depJiIl7yw2Q85zJyeX6fw==
+
+react-native-section-alphabet-list@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/react-native-section-alphabet-list/-/react-native-section-alphabet-list-2.0.4.tgz#71e2e6f3537aed3045251172b27ce32d6beddf87"
+  integrity sha512-e4fA79YcTCPLVbZ6/6FAeMLScjPHqBXcDwHOVRG/2XZw/E318Kw035OSuXhsErLPIRq9cuGrHx6VphTpwZILew==
+  dependencies:
+    react-native-section-list-get-item-layout "^2.2.3"
+
+react-native-section-list-get-item-layout@^2.2.3:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/react-native-section-list-get-item-layout/-/react-native-section-list-get-item-layout-2.2.3.tgz#152a8efdcb3847dbcbeb04cd2d0de4312d3d2fcb"
+  integrity sha512-fzCW5SiYP6qCZyDHebaElHonIFr8NFrZK9JDkxFLnpxMJih4d+HQ4rHyOs0Z4Gb/FjyCVbRH7RtEnjeQ0XffMg==
 
 react-native-svg@12.1.0:
   version "12.1.0"

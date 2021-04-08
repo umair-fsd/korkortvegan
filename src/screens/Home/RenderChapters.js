@@ -17,6 +17,7 @@ import { setPagingStatus, emptyCounters } from "../../redux/actions";
 
 const Chapter = ({ chapterName, id }) => {
   const [loading, setLoading] = useState(false);
+  const [loadingResetProgress, setLoadingResetProgress] = useState(false);
   const webURL = useSelector((state) => state.webURL);
   const user = useSelector((state) => state.user);
   const navigation = useNavigation();
@@ -27,8 +28,8 @@ const Chapter = ({ chapterName, id }) => {
         backgroundColor: COLORS.primary,
         margin: 5,
         paddingVertical: 15,
-        marginHorizontal: 20,
-        borderRadius: 15,
+        marginHorizontal: 5,
+        borderRadius: 10,
         flexDirection: "row",
         justifyContent: "space-between",
       }}
@@ -38,12 +39,52 @@ const Chapter = ({ chapterName, id }) => {
           padding: 5,
           color: COLORS.white,
           marginLeft: 10,
-          fontSize: SIZES.h2,
+          fontSize: SIZES.h3,
           width: 150,
         }}
       >
         {chapterName}
       </Text>
+      <TouchableOpacity
+        onPress={async () => {
+          setLoadingResetProgress(true);
+          await axios
+            .get(`${webURL}/api/resetQuestionStatus/${user.user_id}/${id}`, {
+              headers: {
+                Authorization: `Bearer ${user.token}`,
+              },
+            })
+            .then((res) => {
+              res.status == 200 ? alert("Progress reset successful! ") : null;
+              setLoadingResetProgress(false);
+            })
+            .catch((err) => {
+              setLoadingResetProgress(false);
+              console.log(err);
+              alert("Cannot reset the progress, Try agin later!");
+            });
+        }}
+      >
+        {loadingResetProgress == true ? (
+          <ActivityIndicator
+            size={"large"}
+            color={COLORS.white}
+            style={{ right: 10 }}
+          />
+        ) : (
+          <Text
+            style={{
+              marginRight: 10,
+              backgroundColor: COLORS.white,
+              padding: 7,
+              borderRadius: 5,
+              fontSize: 11,
+            }}
+          >
+            Reset Progress
+          </Text>
+        )}
+      </TouchableOpacity>
 
       <TouchableOpacity
         onPress={async () => {
@@ -106,8 +147,9 @@ const Chapter = ({ chapterName, id }) => {
             style={{
               marginRight: 10,
               backgroundColor: COLORS.white,
-              padding: 8,
+              padding: 7,
               borderRadius: 5,
+              fontSize: 11,
             }}
           >
             Start Test

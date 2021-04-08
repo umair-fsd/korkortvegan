@@ -1,27 +1,14 @@
-import React, { useEffect } from "react";
-import { View, Text } from "react-native";
-import { RadioButton } from "react-native-paper";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
 
-const MyComponent = () => {
-  const [checked, setChecked] = React.useState("first");
-
+const TestScreen = () => {
   return (
-    <View
-      style={{
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "row",
-      }}
-    >
-      <Text>Option 1</Text>
-      <RadioButton.Group>
-        <RadioButton.Item value="first" onPress={() => console.log(checked)} />
-
-        <RadioButton value="second" onPress={() => setChecked("second")} />
-      </RadioButton.Group>
+    <View>
+      <Text></Text>
     </View>
   );
 };
 
-export default MyComponent;
+export default TestScreen;
+
+const styles = StyleSheet.create({});

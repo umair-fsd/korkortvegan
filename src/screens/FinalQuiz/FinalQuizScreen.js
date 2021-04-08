@@ -763,7 +763,23 @@ const FinalQuizScreen = ({ route, navigation }) => {
             digitTxtStyle={{ color: "white", fontSize: 30 }}
             size={20}
             // onChange={}
-            onFinish={() => alert("finished")}
+            onFinish={async () => {
+              await axios
+                .get(`${webURL}/api/resetQuestionStatusFinal/${user.user_id}`, {
+                  headers: {
+                    Authorization: `Bearer ${user.token}`,
+                  },
+                })
+                .then((res) => {
+                  res.status == 200 ? alert("Time's Up! ") : null;
+
+                  navigation.navigate("FinalResultScreen");
+                })
+                .catch((err) => {
+                  console.log(err);
+                  // alert("Cannot reset the progress, Try agin later!");
+                });
+            }}
             //onPress={() => alert("Timer Stopped")}
             timeToShow={["M", "S"]}
             size={20}
