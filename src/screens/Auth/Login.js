@@ -13,6 +13,7 @@ import { COLORS, SIZES } from "../../constants";
 import axios from "axios";
 import { useDispatch, useSelector, webURL } from "react-redux";
 import { initUser, emptyCounters, setPagingStatus } from "../../redux/actions";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 /////TEMP IMPORTS
 
@@ -38,7 +39,7 @@ const Login = ({ navigation }) => {
           password: "khs8AADJYZ",
         })
         .then(async (res) => {
-          console.log(res.status);
+          //console.log(res.status);
           res.status == 200 ? console.log("Demo Account Logged In") : null;
           dispatch(
             initUser({
@@ -51,6 +52,17 @@ const Login = ({ navigation }) => {
           );
           setIsDisabled(false);
         });
+    };
+
+    ////Store Token and User_ID to Local Storage///
+    const storeData = async (token, user_id, email) => {
+      try {
+        await AsyncStorage.setItem("@token", token);
+        await AsyncStorage.setItem("@user_id", user_id.toString());
+        await AsyncStorage.setItem("@user_email", email);
+      } catch (e) {
+        // saving error
+      }
     };
     return (
       <>
@@ -121,6 +133,8 @@ const Login = ({ navigation }) => {
                         lastName: "Doe",
                       })
                     );
+                    //Store Data To Local
+                    storeData(res.data.token, res.data.user_id, email);
                     setEmail("");
                     setPassword("");
                     setLoading(false);

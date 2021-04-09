@@ -5,6 +5,7 @@ import {
   Home,
   Profile,
   Login,
+  PreAuthCheck,
   QuizScreen,
   ResultScreen,
   ProgressScreen,
@@ -35,10 +36,11 @@ export default function App() {
           screenOptions={{
             headerShown: false,
           }}
-          initialRouteName={"Login"}
+          initialRouteName={"PreAuthCheck"}
         >
           <Stack.Screen name="Home" component={Tabs} />
           <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen name="PreAuthCheck" component={PreAuthCheck} />
           <Stack.Screen name="QuizScreen" component={QuizScreen} />
           <Stack.Screen name="ResultScreen" component={ResultScreen} />
           <Stack.Screen name="DemoResultScreen" component={DemoResultScreen} />

@@ -11,6 +11,7 @@ import { Button } from "react-native-paper";
 import { COLORS, SIZES } from "../../constants";
 import axios from "axios";
 import { useDispatch, useSelector, webURL } from "react-redux";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { FontAwesome } from "@expo/vector-icons";
 
@@ -98,9 +99,18 @@ const Profile = ({ navigation }) => {
                     Authorization: `Bearer ${user.token}`,
                   },
                 })
-                .then((res) => {
+                .then(async (res) => {
                   console.log(res);
                   alert("Logged Out");
+                  try {
+                    await AsyncStorage.removeItem("@token");
+                    await AsyncStorage.removeItem("@user_id");
+                    await AsyncStorage.removeItem("@user_email");
+                  } catch (e) {
+                    // remove error
+                  }
+
+                  console.log("Done.");
                   navigation.reset({
                     routes: [{ name: "Login" }],
                   });

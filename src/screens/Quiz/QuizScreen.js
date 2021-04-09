@@ -240,32 +240,6 @@ const QuizScreen = ({ route, navigation }) => {
     </View>
   );
 
-  const fetchChapterQuestions = async () => {
-    await axios
-      .get(
-        `https://stssodra.dimitris.in/api/chaptersWithQuestions/${id}?email=admin@admin.com&password=admin`
-      )
-      .then((res) => {
-        setLoading(true);
-        // console.log(res.status);
-
-        setQuestions(res.data);
-        //console.log(questions.chaptersWithQuestions[0]);
-        setLoading(false);
-      });
-
-    // console.log(questions.chaptersWithQuestions[1].id);
-    // console.log(questions.chaptersWithQuestions[0].id);
-
-    if (!questions == "")
-      setQuestionID(() => {
-        return questions.chaptersWithQuestions[0].id;
-      });
-    // console.log(questions.chaptersWithQuestions);
-
-    //await fetchOptions();
-  };
-
   const fetchOptions = async () => {
     console.log("Question ID is : " + questionID);
     setLoading(true);
@@ -282,9 +256,13 @@ const QuizScreen = ({ route, navigation }) => {
         setOptions(() => {
           return res.data;
         });
+        console.log(options);
+
+        setValue(res.data.userAnswerID);
+
         setLoading(false);
       });
-
+    console.log("value ====" + value);
     // console.log(questionID);
   };
   const renderItem = ({ item }) => (
@@ -298,91 +276,54 @@ const QuizScreen = ({ route, navigation }) => {
 
   const OptionBox = ({ answer, answerID, correctAnswerID, userAnswerID }) => {
     return (
-      <View style={{ flex: 1 }}>
-        {/* <TouchableOpacity
-          onPress={async () => {
-            setIsSelected(true);
-            //  console.log(answer);
-            await axios
-              .get(
-                `https://stssodra.dimitris.in/api/getCorrectAnswer/${questionID}?email=admin@admin.com&password=admin`
-              )
-              .then((res) => {
-                if (res.data.CorrectAnswer.answer == answer) {
-                  // alert("Correct");
-                  dispatch(
-                    setProgress({
-                      [questionID]: answerID,
-                    })
-                  );
-                  //console.log(Object.keys(userProgress).length);
-                  dispatch(setCorrectAnswers());
-                  console.log(reduxCorrectAnswers);
-                  /////if questions quiz is completed?
-                  if (
-                    questionIndex <
-                    Object.keys(quizData.chaptersWithQuestions).length - 1
-                  ) {
-                    setQuestionIndex(++questionIndex);
-                    setQuestionID(
-                      quizData.chaptersWithQuestions[questionIndex].id
-                    );
-                    // setCounterKey((prevKey) => prevKey + 1);
-                  } else {[]
-                    navigation.reset({
-                      routes: [{ name: "ResultScreen" }],
-                    });
-                  }
-                } else {
-                  // alert("False");
-                  dispatch(
-                    setProgress({
-                      [questionID]: answerID,
-                    })
-                  );
-
-                  //console.log(Object.keys(userProgress).length);
-                  dispatch(setWrongAnswers());
-                  console.log(reduxWrongAnswers);
-                  if (
-                    questionIndex <
-                    Object.keys(quizData.chaptersWithQuestions).length - 1
-                  ) {
-                    setQuestionIndex(++questionIndex);
-                    setQuestionID(
-                      quizData.chaptersWithQuestions[questionIndex].id
-                    );
-                    setCounterKey((prevKey) => prevKey + 1);
-                  } else {
-                    navigation.reset({
-                      routes: [{ name: "ResultScreen" }],
-                    });
-                  }
-                }
-              });
-          }}
-        > */}
-        {/* <Text
+      <TouchableOpacity
+        onPress={() => {
+          setValue(answerID);
+        }}
+      >
+        <View style={{ flex: 1 }}>
+          <Text
             style={{
               marginRight: 10,
+              // backgroundColor:
+              //   answerID == userAnswerID && value == answerID
+              //     ? COLORS.primary
+              //     : value == answerID
+              //     ? COLORS.primary
+              //     : "white",
+
               backgroundColor:
-                isSelected == true ? COLORS.primary : COLORS.white,
-              marginVertical: 2,
+                answerID == userAnswerID && value == answerID
+                  ? COLORS.primary
+                  : value == answerID
+                  ? COLORS.primary
+                  : "white",
+              marginVertical: 8,
               textAlign: "center",
               fontSize: SIZES.h4,
               alignSelf: "center",
               width: "90%",
-              borderWidth: 1,
+              borderWidth: 2,
               padding: 8,
               borderRadius: 5,
-              color: COLORS.primary,
-              borderColor: COLORS.primary,
+              color:
+                answerID == userAnswerID && value == answerID
+                  ? COLORS.white
+                  : value == answerID
+                  ? COLORS.white
+                  : "black",
+              borderColor:
+                userAnswerID == null
+                  ? COLORS.primary
+                  : correctAnswerID == answerID || value == answerID
+                  ? COLORS.primary
+                  : "red",
               borderRadius: 10,
             }}
           >
             {answer}
-          </Text> */}
-        <RadioButton.Group
+          </Text>
+          {/* <RadioButton.Group
           value={value}
           onValueChange={(value) => {
             setValue(value);
@@ -412,9 +353,9 @@ const QuizScreen = ({ route, navigation }) => {
             value={answerID}
             status={answerID == userAnswerID ? "checked" : "unchecked"}
           />
-        </RadioButton.Group>
-        {/* </TouchableOpacity> */}
-      </View>
+        </RadioButton.Group> */}
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -708,7 +649,7 @@ const QuizScreen = ({ route, navigation }) => {
         <View>
           <TouchableOpacity
             onPress={async () => {
-              if (value == "") {
+              if (value == "" || value == null) {
                 // if (
                 //   questionIndex <
                 //   Object.keys(quizData.chaptersWithQuestions).length - 1
@@ -894,25 +835,10 @@ const QuizScreen = ({ route, navigation }) => {
               storeData(String(timerValue));
             }}
             //onFinish={() => alert("finished")}
-            onFinish={async () => {
-              await axios
-                .get(
-                  `${webURL}/api/resetQuestionStatus/${user.user_id}/${id}`,
-                  {
-                    headers: {
-                      Authorization: `Bearer ${user.token}`,
-                    },
-                  }
-                )
-                .then((res) => {
-                  res.status == 200 ? alert("Time's Up!") : null;
-                  navigation.navigate("Home");
-                })
-                .catch((err) => {
-                  console.log(err);
-                  alert("Cannot reset the progress, Try agin later!");
-                });
-            }}
+            // onPress={() => {
+            //   console.log("userAnswer :  " + options.userAnswerID);
+            //   console.log("correctAnswerID :  " + options.correctAnswerID);
+            // }}
             timeToShow={["M", "S"]}
             digitStyle={{
               backgroundColor: COLORS.primary,

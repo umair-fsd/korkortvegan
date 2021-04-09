@@ -1,4 +1,5 @@
 import Login from "./Auth/Login";
+import PreAuthCheck from "./Auth/PreAuthCheck";
 import Home from "./Home/Home";
 import Profile from "./Profile/Profile";
 import Terms from "./Terms/Terms";
@@ -14,6 +15,7 @@ import TestScreen from "./Tests/TestScreen";
 import Favourites from "./Favourites/Favourites";
 
 export {
+  PreAuthCheck,
   Login,
   Home,
   Profile,
