@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Animated,
+  Alert,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import qs from "qs";
@@ -222,104 +223,49 @@ const FinalQuizScreen = ({ route, navigation }) => {
   const OptionBox = ({ answer, answerID }) => {
     return (
       <View style={{ flex: 1 }}>
-        {/* <TouchableOpacity
-          onPress={async () => {
-            setIsSelected(true);
-            //  console.log(answer);
-            await axios
-              .get(
-                `https://stssodra.dimitris.in/api/getCorrectAnswer/${questionID}?email=admin@admin.com&password=admin`
-              )
-              .then((res) => {
-                if (res.data.CorrectAnswer.answer == answer) {
-                  // alert("Correct");
-                  dispatch(
-                    setProgress({
-                      [questionID]: answerID,
-                    })
-                  );
-                  //console.log(Object.keys(userProgress).length);
-                  dispatch(setCorrectAnswers());
-                  console.log(reduxCorrectAnswers);
-                  /////if questions quiz is completed?
-                  if (
-                    questionIndex <
-                    Object.keys(quizData.DemoQuestions).length - 1
-                  ) {
-                    setQuestionIndex(++questionIndex);
-                    setQuestionID(
-                      quizData.DemoQuestions[questionIndex].id
-                    );
-                    // setCounterKey((prevKey) => prevKey + 1);
-                  } else {[]
-                    navigation.reset({
-                      routes: [{ name: "ResultScreen" }],
-                    });
-                  }
-                } else {
-                  // alert("False");
-                  dispatch(
-                    setProgress({
-                      [questionID]: answerID,
-                    })
-                  );
-
-                  //console.log(Object.keys(userProgress).length);
-                  dispatch(setWrongAnswers());
-                  console.log(reduxWrongAnswers);
-                  if (
-                    questionIndex <
-                    Object.keys(quizData.DemoQuestions).length - 1
-                  ) {
-                    setQuestionIndex(++questionIndex);
-                    setQuestionID(
-                      quizData.DemoQuestions[questionIndex].id
-                    );
-                    setCounterKey((prevKey) => prevKey + 1);
-                  } else {
-                    navigation.reset({
-                      routes: [{ name: "ResultScreen" }],
-                    });
-                  }
-                }
-              });
+        <TouchableOpacity
+          onPress={() => {
+            setValue(answerID);
           }}
-        > */}
-        {/* <Text
+        >
+          <Text
             style={{
               marginRight: 10,
+              // backgroundColor:
+              //   answerID == userAnswerID && value == answerID
+              //     ? COLORS.primary
+              //     : value == answerID
+              //     ? COLORS.primary
+              //     : "white",
+
               backgroundColor:
-                isSelected == true ? COLORS.primary : COLORS.white,
-              marginVertical: 2,
+                value == answerID
+                  ? COLORS.primary
+                  : value == answerID
+                  ? COLORS.primary
+                  : "white",
+              marginVertical: 8,
               textAlign: "center",
               fontSize: SIZES.h4,
               alignSelf: "center",
               width: "90%",
-              borderWidth: 1,
+              borderWidth: 2,
               padding: 8,
               borderRadius: 5,
-              color: COLORS.primary,
+              color:
+                value == answerID
+                  ? COLORS.white
+                  : value == answerID
+                  ? COLORS.white
+                  : "black",
               borderColor: COLORS.primary,
+
               borderRadius: 10,
             }}
           >
             {answer}
-          </Text> */}
-        <RadioButton.Group
-          onValueChange={(value) => {
-            setValue(value);
-          }}
-          value={value}
-        >
-          <RadioButton.Item
-            style={{ marginVertical: -5 }}
-            labelStyle={{ fontSize: SIZES.h4, color: COLORS.primary }}
-            color={COLORS.primary}
-            label={answer}
-            value={answerID}
-          />
-        </RadioButton.Group>
-        {/* </TouchableOpacity> */}
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -541,6 +487,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
                     );
                     //console.log(Object.keys(userProgress).length);
                     dispatch(setCorrectAnswers());
+                    setValue("");
 
                     /////if questions quiz is completed?
                     if (
@@ -665,7 +612,12 @@ const FinalQuizScreen = ({ route, navigation }) => {
             //   dispatch(setTimer(timerValue - 1));
             //   storeData(String(timerValue));
             // }}
-            //onFinish={() => alert("finished")}
+            onFinish={() => {
+              alert("Time's Up!");
+              navigation.reset({
+                routes: [{ name: "DemoResultScreen" }],
+              });
+            }}
             // onPress={() => {
             //   console.log("userAnswer :  " + options.userAnswerID);
             //   console.log("correctAnswerID :  " + options.correctAnswerID);
