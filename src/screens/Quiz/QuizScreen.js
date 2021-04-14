@@ -293,17 +293,21 @@ const QuizScreen = ({ route, navigation }) => {
               //     : "white",
 
               backgroundColor:
-                answerID == userAnswerID && value == answerID
+                answerID == correctAnswerID && userAnswerID !== null
                   ? COLORS.primary
+                  : answerID == userAnswerID
+                  ? userAnswerID == correctAnswerID
+                    ? COLORS.primary
+                    : COLORS.red
                   : value == answerID
-                  ? COLORS.primary
-                  : "white",
+                  ? COLORS.selectionColor
+                  : COLORS.blue,
               marginVertical: 8,
               textAlign: "center",
               fontSize: SIZES.h4,
               alignSelf: "center",
               width: "90%",
-              borderWidth: 2,
+              borderWidth: value == answerID ? 2 : 0,
               padding: 8,
               borderRadius: 5,
               color:
@@ -311,13 +315,8 @@ const QuizScreen = ({ route, navigation }) => {
                   ? COLORS.white
                   : value == answerID
                   ? COLORS.white
-                  : "black",
-              borderColor:
-                userAnswerID == null
-                  ? COLORS.primary
-                  : correctAnswerID == answerID || value == answerID
-                  ? COLORS.primary
-                  : "red",
+                  : "white",
+
               borderRadius: 10,
             }}
           >
