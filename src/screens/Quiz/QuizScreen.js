@@ -57,6 +57,7 @@ const QuizScreen = ({ route, navigation }) => {
   const pagingStatus = useSelector((state) => state.pagingStatus);
   const { quizData, chapterName, id, qID, doneUntil } = route.params;
   const [loading, setLoading] = useState(true);
+  const [toggleOverView, setToggleOverView] = useState(false);
   const [questions, setQuestions] = useState("");
   const [options, setOptions] = useState(() => {
     return;
@@ -83,6 +84,7 @@ const QuizScreen = ({ route, navigation }) => {
   //////////USE EFFECTS////////
 
   useEffect(() => {
+    fetchOptions();
     getData();
     setModalVisible(true);
     jumpToQuestion();
@@ -185,60 +187,61 @@ const QuizScreen = ({ route, navigation }) => {
   };
 
   /////////Header Questions List Rendering Flat List
-  const renderListQuestions = ({ item, index }) => (
-    <View
-      style={{
-        flexDirection: "row",
-        backgroundColor: "white",
-        marginVertical: 5,
-      }}
-    >
-      <TouchableOpacity
-        onPress={() => {
-          console.log(index);
-          setQuestionID(() => {
-            return quizData.chaptersWithQuestions[index].id;
-          });
-          setLoading(true);
-          setQuestionIndex(index);
-
-          //fetchOptions();
+  const renderListQuestions = ({ item, index }) =>
+    toggleOverView == true ? (
+      <View
+        style={{
+          flexDirection: "row",
+          backgroundColor: "white",
+          marginVertical: 5,
         }}
       >
-        <View
-          style={{
-            marginHorizontal: 3,
+        <TouchableOpacity
+          onPress={() => {
+            console.log(index);
+            setQuestionID(() => {
+              return quizData.chaptersWithQuestions[index].id;
+            });
+            setLoading(true);
+            setQuestionIndex(index);
 
-            borderRadius: 100,
-            width: 30,
-            height: 30,
-
-            justifyContent: "center",
-
-            backgroundColor:
-              item.status == "correct"
-                ? COLORS.primary
-                : item.status == "wrong"
-                ? "#e74c3c"
-                : item.status == "favorite"
-                ? "#9b59b6"
-                : "#3498db",
+            //fetchOptions();
           }}
         >
-          <Text
+          <View
             style={{
-              color: "white",
-              textAlign: "center",
-              fontSize: item.question == questionID ? SIZES.h2 : SIZES.h4,
-              fontWeight: item.question == questionID ? "bold" : "300",
+              marginHorizontal: 3,
+
+              borderRadius: 100,
+              width: 30,
+              height: 30,
+
+              justifyContent: "center",
+
+              backgroundColor:
+                item.status == "correct"
+                  ? COLORS.primary
+                  : item.status == "wrong"
+                  ? "#e74c3c"
+                  : item.status == "favorite"
+                  ? "#9b59b6"
+                  : "#3498db",
             }}
           >
-            {index + 1}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
+            <Text
+              style={{
+                color: "white",
+                textAlign: "center",
+                fontSize: item.question == questionID ? SIZES.h2 : SIZES.h4,
+                fontWeight: item.question == questionID ? "bold" : "300",
+              }}
+            >
+              {index + 1}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    ) : null;
 
   const fetchOptions = async () => {
     console.log("Question ID is : " + questionID);
@@ -283,42 +286,60 @@ const QuizScreen = ({ route, navigation }) => {
       >
         <View style={{ flex: 1 }}>
           <Text
-            style={{
-              marginRight: 10,
-              // backgroundColor:
-              //   answerID == userAnswerID && value == answerID
-              //     ? COLORS.primary
-              //     : value == answerID
-              //     ? COLORS.primary
-              //     : "white",
+            style={
+              toggleOverView == true
+                ? {
+                    marginRight: 10,
+                    backgroundColor:
+                      answerID == correctAnswerID && userAnswerID !== null
+                        ? COLORS.primary
+                        : answerID == userAnswerID
+                        ? userAnswerID == correctAnswerID
+                          ? COLORS.primary
+                          : COLORS.red
+                        : value == answerID
+                        ? COLORS.selectionColor
+                        : COLORS.blue,
+                    marginVertical: 8,
+                    textAlign: "center",
+                    fontSize: SIZES.h4,
+                    alignSelf: "center",
+                    width: "90%",
+                    borderWidth: value == answerID ? 2 : 0,
+                    padding: 8,
+                    borderRadius: 5,
+                    color:
+                      answerID == userAnswerID && value == answerID
+                        ? COLORS.white
+                        : value == answerID
+                        ? COLORS.white
+                        : "white",
 
-              backgroundColor:
-                answerID == correctAnswerID && userAnswerID !== null
-                  ? COLORS.primary
-                  : answerID == userAnswerID
-                  ? userAnswerID == correctAnswerID
-                    ? COLORS.primary
-                    : COLORS.red
-                  : value == answerID
-                  ? COLORS.selectionColor
-                  : COLORS.blue,
-              marginVertical: 8,
-              textAlign: "center",
-              fontSize: SIZES.h4,
-              alignSelf: "center",
-              width: "90%",
-              borderWidth: value == answerID ? 2 : 0,
-              padding: 8,
-              borderRadius: 5,
-              color:
-                answerID == userAnswerID && value == answerID
-                  ? COLORS.white
-                  : value == answerID
-                  ? COLORS.white
-                  : "white",
+                    borderRadius: 10,
+                  }
+                : {
+                    ////if toggle false //
+                    marginRight: 10,
+                    backgroundColor:
+                      value == answerID ? COLORS.selectionColor : COLORS.blue,
+                    marginVertical: 8,
+                    textAlign: "center",
+                    fontSize: SIZES.h4,
+                    alignSelf: "center",
+                    width: "90%",
+                    borderWidth: value == answerID ? 2 : 0,
+                    padding: 8,
+                    borderRadius: 5,
+                    color:
+                      answerID == userAnswerID && value == answerID
+                        ? COLORS.white
+                        : value == answerID
+                        ? COLORS.white
+                        : "white",
 
-              borderRadius: 10,
-            }}
+                    borderRadius: 10,
+                  }
+            }
           >
             {answer}
           </Text>
@@ -629,7 +650,11 @@ const QuizScreen = ({ route, navigation }) => {
           </TouchableOpacity>
         </View>
         <View>
-          {/* <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setToggleOverView(!toggleOverView);
+            }}
+          >
             <Text
               style={{
                 borderColor: COLORS.primary,
@@ -641,9 +666,9 @@ const QuizScreen = ({ route, navigation }) => {
                 color: "white",
               }}
             >
-              Submit
+              {toggleOverView == true ? "Hide" : "Show"} Overview
             </Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
         </View>
         <View>
           <TouchableOpacity

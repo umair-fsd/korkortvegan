@@ -59,9 +59,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
 
   //////////USE EFFECTS////////
 
-  useEffect(() => {
-    // jumpToQuestion();
-  }, []);
+  useEffect(() => {}, []);
   useEffect(() => {
     fetchOptions();
   }, [questionID]);

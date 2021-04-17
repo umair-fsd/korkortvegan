@@ -6,7 +6,7 @@ export const initialState = {
   timerValue: 0,
   wrongAnswers: 0,
   unAnswered: 0,
-  webURL: "https://stssodra.dimitris.in",
+  webURL: "https://korkortsvagen.se",
   user: [
     {
       user_id: null,

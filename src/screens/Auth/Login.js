@@ -172,6 +172,7 @@ const Login = ({ navigation }) => {
                 })
                 .then((res) => {
                   ////initialized local question status array
+                  console.log(res.data);
                   var array = [];
                   for (
                     let i = 0;
