@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import qs from "qs";
 import {
   StyleSheet,
   Text,
@@ -10,23 +11,60 @@ import {
 import { Button } from "react-native-paper";
 import { COLORS, SIZES } from "../../constants";
 import axios from "axios";
-import { useDispatch, useSelector, webURL } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, Feather } from "@expo/vector-icons";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 /////TEMP IMPORTS
 
 const Profile = ({ navigation }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [oldPassword, setOldPassword] = useState("");
+  const [newpassword, setNewPassword] = useState("");
+  const [cpassword, setCPassword] = useState("");
+  const [toggleView, setToggleView] = useState(false);
   const user = useSelector((state) => state.user);
   const webURL = useSelector((state) => state.webURL);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    console.log(user.token);
-  }, []);
+  useEffect(() => {}, []);
+
+  const changePassword = async () => {
+    if (oldPassword == "" || newpassword == "" || cpassword == "") {
+      alert("Pleasae Fill All Fields!");
+    } else if (cpassword !== newpassword) {
+      alert("New Password & Confirm Password does not match!");
+    } else if (newpassword.length < 6 || cpassword.length < 6) {
+      alert("The new password must be at least 6 characters! ");
+    } else if (oldPassword == newpassword) {
+      alert("New Password Must Be Different From Old Password!");
+    } else {
+      await axios({
+        method: "put",
+        url: `${webURL}/api/changePassword/${user.user_id}`,
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        data: qs.stringify({
+          old_password: oldPassword,
+          new_password: newpassword,
+          confirm_password: cpassword,
+        }),
+      })
+        .then((res) => {
+          //  console.log(q + "=>" + a);
+          alert(res.data.message);
+          setOldPassword("");
+          setNewPassword("");
+          setCPassword("");
+        })
+        .catch((err) => {
+          console.log("Error", err.response);
+        });
+    }
+  };
   const renderProfile = () => {
     return (
       <>
@@ -58,37 +96,70 @@ const Profile = ({ navigation }) => {
           </Text>
         </View>
         <View style={styles.bottomView}>
+          <TouchableOpacity
+            onPress={() => {
+              setToggleView(!toggleView);
+            }}
+          >
+            <View
+              style={{
+                width: 300,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Feather
+                style={{
+                  alignSelf: "flex-end",
+                }}
+                name={toggleView == true ? "eye" : "eye-off"}
+                size={24}
+                color={COLORS.primary}
+              />
+              <Text style={{ color: COLORS.primary, left: 10 }}>
+                {toggleView == true ? "Show Passwords" : "Hide Passwords"}
+              </Text>
+            </View>
+          </TouchableOpacity>
+
           <TextInput
-            editable={false}
+            secureTextEntry={toggleView}
             style={styles.inputStyle}
             placeholder="Old Password"
+            value={oldPassword}
             onChangeText={(v) => {
-              setEmail(v);
+              setOldPassword(v);
             }}
           />
           <TextInput
-            editable={false}
-            secureTextEntry
+            secureTextEntry={toggleView}
             style={styles.inputStyle}
             placeholder="New Password"
+            value={newpassword}
             onChangeText={(v) => {
-              setPassword(v);
+              setNewPassword(v);
             }}
           />
           <TextInput
-            editable={false}
-            secureTextEntry
+            secureTextEntry={toggleView}
             style={styles.inputStyle}
             placeholder="Confirm New Password"
+            value={cpassword}
             onChangeText={(v) => {
-              setPassword(v);
+              setCPassword(v);
             }}
           />
-          <Button style={styles.btnStyle} mode={"outlined"} disabled>
+          <Button
+            style={styles.btnStyle}
+            mode={"outlined"}
+            onPress={changePassword}
+          >
             <Text style={{ color: COLORS.white, fontSize: SIZES.h3 }}>
               Change Password
             </Text>
           </Button>
+
           <Button
             style={styles.btnLogOutStyle}
             mode={"outlined"}
