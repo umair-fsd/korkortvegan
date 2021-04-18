@@ -239,16 +239,16 @@ const FinalQuizScreen = ({ route, navigation }) => {
 
               backgroundColor:
                 value == answerID
-                  ? COLORS.primary
+                  ? COLORS.selectionColor
                   : value == answerID
-                  ? COLORS.primary
-                  : "white",
+                  ? COLORS.selectionColor
+                  : COLORS.blue,
               marginVertical: 8,
               textAlign: "center",
               fontSize: SIZES.h4,
               alignSelf: "center",
               width: "90%",
-              borderWidth: 2,
+              borderWidth: 1,
               padding: 8,
               borderRadius: 5,
               color:
@@ -256,8 +256,8 @@ const FinalQuizScreen = ({ route, navigation }) => {
                   ? COLORS.white
                   : value == answerID
                   ? COLORS.white
-                  : "black",
-              borderColor: COLORS.primary,
+                  : "white",
+              borderColor: value == answerID ? "black" : COLORS.blue,
 
               borderRadius: 10,
             }}

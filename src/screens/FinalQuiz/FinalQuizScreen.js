@@ -207,7 +207,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
   const fetchOptions = async () => {
     setLoading(true);
     const res = await axios.get(
-      `${webURL}/api/getAnswersForQuestion/${questionID}/${user.user_id}`,
+      `${webURL}/api/getAnswersForFinalQuestion/${questionID}/${user.user_id}`,
       {
         headers: {
           Authorization: `Bearer ${user.token}`,
@@ -215,7 +215,9 @@ const FinalQuizScreen = ({ route, navigation }) => {
       }
     );
     const { data } = res;
+    console.log(data);
     setOptions(res.data);
+    setValue(res.data.userAnswerID);
     setLoading(false);
     // console.log(questionID);
   };
@@ -243,16 +245,16 @@ const FinalQuizScreen = ({ route, navigation }) => {
 
               backgroundColor:
                 value == answerID
-                  ? COLORS.primary
+                  ? COLORS.selectionColor
                   : value == answerID
-                  ? COLORS.primary
-                  : "white",
+                  ? COLORS.selectionColor
+                  : COLORS.blue,
               marginVertical: 8,
               textAlign: "center",
               fontSize: SIZES.h4,
               alignSelf: "center",
               width: "90%",
-              borderWidth: 2,
+              borderWidth: 1,
               padding: 8,
               borderRadius: 5,
               color:
@@ -260,8 +262,8 @@ const FinalQuizScreen = ({ route, navigation }) => {
                   ? COLORS.white
                   : value == answerID
                   ? COLORS.white
-                  : "black",
-              borderColor: COLORS.primary,
+                  : "white",
+              borderColor: value == answerID ? "black" : COLORS.blue,
 
               borderRadius: 10,
             }}
@@ -700,12 +702,44 @@ const FinalQuizScreen = ({ route, navigation }) => {
             //key={counterKey}
           />
         </View>
-        <AntDesign
-          name="heart"
-          size={24}
-          color={"#e74c3c"}
-          style={{ marginRight: 10, alignSelf: "center" }}
-        />
+        <TouchableOpacity
+          style={{ alignSelf: "center" }}
+          onPress={async () => {
+            await axios({
+              method: "put",
+              url: `${webURL}/api/saveQuestion`,
+              headers: {
+                Authorization: `Bearer ${user.token}`,
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              data: qs.stringify({
+                user_id: user.user_id,
+                question_id: questionID,
+              }),
+            })
+              .then((res) => {
+                dispatch(
+                  updatePagingStatus([
+                    {
+                      question: questionID,
+                      status: "favorite",
+                    },
+                  ])
+                );
+                alert("Added To Favourites");
+              })
+              .catch((err) => {
+                console.log("Error", err.response.data);
+              });
+          }}
+        >
+          <AntDesign
+            name="heart"
+            size={24}
+            color={"#e74c3c"}
+            style={{ marginRight: 10, alignSelf: "center" }}
+          />
+        </TouchableOpacity>
       </View>
     </>
   );
