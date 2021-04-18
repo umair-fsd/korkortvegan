@@ -501,7 +501,12 @@ const FinalQuizScreen = ({ route, navigation }) => {
               }
             }}
           >
-            {/* <FontAwesome5 name="backward" size={24} color={COLORS.primary} /> */}
+            <FontAwesome5 name="backward" size={24} color={COLORS.primary} />
+          </TouchableOpacity>
+        </View>
+        <View>
+          <TouchableOpacity>
+            {/* <FontAwesome5 name="forward" size={40} color={COLORS.primary} /> */}
           </TouchableOpacity>
         </View>
         <View>
@@ -596,58 +601,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
                 });
             }}
           >
-            <FontAwesome5 name="forward" size={40} color={COLORS.primary} />
-          </TouchableOpacity>
-        </View>
-        <View>
-          <TouchableOpacity
-            onPress={() => {
-              if (
-                questionIndex <
-                Object.keys(quizData.FinalExamQuestions).length - 1
-              ) {
-                dispatch(
-                  setProgress({
-                    [questionID]: null,
-                  })
-                );
-                updateDB(questionID, null);
-                dispatch(
-                  updatePagingStatus([
-                    {
-                      question: questionID,
-                      status: null,
-                    },
-                  ])
-                );
-
-                console.log(userProgress);
-                // console.log(questionID);
-                setQuestionIndex(++questionIndex);
-
-                setQuestionID(quizData.FinalExamQuestions[questionIndex].id);
-
-                // fetchOptions();
-                setCounterKey((prevKey) => prevKey + 1);
-                dispatch(setUnAnswered());
-              } else {
-                console.log(reduxUnAnswered);
-
-                dispatch(
-                  setProgress({
-                    [questionID]: null,
-                  })
-                );
-                updateDB(questionID, null);
-                dispatch(setUnAnswered());
-
-                navigation.reset({
-                  routes: [{ name: "FinalResultScreen" }],
-                });
-              }
-            }}
-          >
-            {/* <FontAwesome5 name="forward" size={24} color={COLORS.primary} /> */}
+            <FontAwesome5 name="forward" size={24} color={COLORS.primary} />
           </TouchableOpacity>
         </View>
       </View>

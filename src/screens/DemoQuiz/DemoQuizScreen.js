@@ -20,6 +20,7 @@ import {
   AntDesign,
   MaterialCommunityIcons,
   FontAwesome5,
+  Ionicons,
 } from "@expo/vector-icons";
 import * as Speech from "expo-speech";
 import { SIZES, COLORS } from "../../constants";
@@ -281,8 +282,23 @@ const FinalQuizScreen = ({ route, navigation }) => {
         androidStatusBarColor={COLORS.primary}
       >
         <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          style={{
+            flex: 1,
+            justifyContent: "space-between",
+            flexDirection: "row",
+            alignItems: "center",
+          }}
         >
+          <Ionicons
+            name="home-sharp"
+            size={24}
+            color={COLORS.white}
+            onPress={() => {
+              navigation.reset({
+                routes: [{ name: "Login" }],
+              });
+            }}
+          />
           <Text
             style={{
               fontSize: SIZES.h2,
@@ -292,6 +308,16 @@ const FinalQuizScreen = ({ route, navigation }) => {
             }}
           >
             Demo
+          </Text>
+          <Text
+            style={{
+              fontSize: SIZES.h2,
+
+              fontWeight: "bold",
+              color: "white",
+            }}
+          >
+            {""}
           </Text>
         </View>
 
