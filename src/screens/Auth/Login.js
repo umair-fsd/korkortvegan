@@ -124,13 +124,14 @@ const Login = ({ navigation }) => {
                   })
                   .then((res) => {
                     res.status == 200 ? alert("Welcome") : null;
+
                     dispatch(
                       initUser({
                         user_id: res.data.user_id,
                         token: res.data.token,
                         email,
-                        firstName: "John",
-                        lastName: "Doe",
+                        firstName: res.data.first_name,
+                        lastName: res.data.last_name,
                       })
                     );
                     //Store Data To Local
