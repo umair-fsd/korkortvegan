@@ -13,6 +13,7 @@ import { List } from "react-native-paper";
 import { COLORS, SIZES } from "../../constants";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons, Entypo } from "@expo/vector-icons";
 import { AlphabetList } from "react-native-section-alphabet-list";
 
@@ -27,6 +28,7 @@ const Terms = () => {
   const [terms, setTerms] = useState("");
   const [searchData, setSearchData] = useState("");
   const [key, setKey] = useState(0);
+  const navigation = useNavigation();
   let letters = "abcdefghijklmnopqrstuvwxyz".toUpperCase().split("");
   const handleAlphabetSearch = (value) => {
     const newData = searchData.termList.filter((item) => {
@@ -62,6 +64,16 @@ const Terms = () => {
         },
       })
       .then((res) => {
+        ///check if user is Active
+        if (res.data.active == 0) {
+          alert(res.data.error);
+          setLoading(false);
+          navigation.reset({
+            routes: [{ name: "Login" }],
+          });
+          return;
+        }
+        ///
         Object.keys(res.data).length == 0 ? setNoData(true) : setNoData(nodata);
         setTerms(res.data);
         setSearchData(res.data);

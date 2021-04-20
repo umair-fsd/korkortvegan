@@ -39,7 +39,19 @@ const FinalResultScreen = ({ route, navigation }) => {
           "Content-Type": "application/x-www-form-urlencoded",
         },
       })
-      .then((res) => setOverViewData(res.data.FinalQuestionStatus))
+      .then((res) => {
+        ///check if user is Active
+        if (res.data.active == 0) {
+          alert(res.data.error);
+          setLoading(false);
+          navigation.reset({
+            routes: [{ name: "Login" }],
+          });
+          return;
+        }
+        ///
+        setOverViewData(res.data.FinalQuestionStatus);
+      })
       .catch((err) => console.log(err));
   };
   const renderOverView = ({ item }) => (

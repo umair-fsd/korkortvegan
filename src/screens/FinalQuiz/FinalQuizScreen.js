@@ -215,7 +215,16 @@ const FinalQuizScreen = ({ route, navigation }) => {
       }
     );
     const { data } = res;
-    console.log(data);
+    ///check if user is Active
+    if (res.data.active == 0) {
+      alert(res.data.error);
+      setLoading(false);
+      navigation.reset({
+        routes: [{ name: "Login" }],
+      });
+      return;
+    }
+    ///
     setOptions(res.data);
     setValue(res.data.userAnswerID);
     setLoading(false);
@@ -245,16 +254,16 @@ const FinalQuizScreen = ({ route, navigation }) => {
 
               backgroundColor:
                 value == answerID
-                  ? COLORS.selectionColor
+                  ? COLORS.primary
                   : value == answerID
-                  ? COLORS.selectionColor
-                  : COLORS.blue,
+                  ? COLORS.primary
+                  : "white",
               marginVertical: 8,
               textAlign: "center",
               fontSize: SIZES.h4,
               alignSelf: "center",
               width: "90%",
-              borderWidth: 1,
+              borderWidth: 2,
               padding: 8,
               borderRadius: 5,
               color:
@@ -262,8 +271,8 @@ const FinalQuizScreen = ({ route, navigation }) => {
                   ? COLORS.white
                   : value == answerID
                   ? COLORS.white
-                  : "white",
-              borderColor: value == answerID ? "black" : COLORS.blue,
+                  : "black",
+              borderColor: COLORS.primary,
 
               borderRadius: 10,
             }}
@@ -528,6 +537,16 @@ const FinalQuizScreen = ({ route, navigation }) => {
                   },
                 })
                 .then((res) => {
+                  ///check if user is Active
+                  if (res.data.active == 0) {
+                    alert(res.data.error);
+                    setLoading(false);
+                    navigation.reset({
+                      routes: [{ name: "Login" }],
+                    });
+                  }
+                  ///
+
                   if (res.data.CorrectAnswer.id == value) {
                     //alert("Correct");
                     updateDB(questionID, value);
@@ -703,7 +722,6 @@ const FinalQuizScreen = ({ route, navigation }) => {
           />
         </View>
         <TouchableOpacity
-          style={{ alignSelf: "center" }}
           onPress={async () => {
             await axios({
               method: "put",
@@ -718,6 +736,16 @@ const FinalQuizScreen = ({ route, navigation }) => {
               }),
             })
               .then((res) => {
+                ///check if user is Active
+                if (res.data.active == 0) {
+                  alert(res.data.error);
+                  setLoading(false);
+                  navigation.reset({
+                    routes: [{ name: "Login" }],
+                  });
+                  return;
+                }
+                ///
                 dispatch(
                   updatePagingStatus([
                     {

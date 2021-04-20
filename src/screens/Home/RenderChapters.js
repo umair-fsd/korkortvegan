@@ -100,6 +100,15 @@ const Chapter = ({ chapterName, id }) => {
                 }
               )
               .then((res) => {
+                ///check if user is Active
+                // if (res.data.active == 0) {
+                //   alert(res.data.error);
+                //   setLoading(false);
+                //   navigation.reset({
+                //     routes: [{ name: "Login" }],
+                //   });
+                // }
+                ///
                 var doneUntil = res.data.chaptersWithQuestions.findIndex(
                   (s) => s.id == res.data.doneUntil
                 );
@@ -133,6 +142,7 @@ const Chapter = ({ chapterName, id }) => {
               });
           } catch (error) {
             alert("Server is not responding, Please try again later");
+            setLoading(false);
           }
         }}
       >
