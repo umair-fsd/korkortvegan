@@ -101,13 +101,13 @@ const Chapter = ({ chapterName, id }) => {
               )
               .then((res) => {
                 ///check if user is Active
-                // if (res.data.active == 0) {
-                //   alert(res.data.error);
-                //   setLoading(false);
-                //   navigation.reset({
-                //     routes: [{ name: "Login" }],
-                //   });
-                // }
+                if (res.data.active == 0) {
+                  alert(res.data.error);
+                  setLoading(false);
+                  navigation.reset({
+                    routes: [{ name: "Login" }],
+                  });
+                }
                 ///
                 var doneUntil = res.data.chaptersWithQuestions.findIndex(
                   (s) => s.id == res.data.doneUntil
