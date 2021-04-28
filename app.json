@@ -1,31 +1,29 @@
 {
   "expo": {
-    "name": "korkortvegan",
-    "slug": "korkortvegan",
+    "name": "körtkortsvägen",
+    "slug": "körtkortsvägen",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#01bc8c"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.korkortvegan.ios"
+      "bundleIdentifier": "com.korkortvagen.ios"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.korkortvegan.android"
+      "package": "com.korkortvagen.android"
     },
     "web": {
       "favicon": "./assets/favicon.png"
