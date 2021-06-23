@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { RadioButton } from "react-native-paper";
+import ImageModal from "react-native-image-modal";
 
 import {
   StyleSheet,
@@ -327,7 +327,7 @@ const QuizScreen = ({ route, navigation }) => {
 
                     borderRadius: 10,
                     borderColor:
-                      value == answerID ? COLORS.black : COLORS.primary,
+                      value == answerID ? COLORS.primary : COLORS.primary,
                   }
                 : {
                     ////if toggle false //
@@ -350,7 +350,8 @@ const QuizScreen = ({ route, navigation }) => {
                         : "black",
 
                     borderRadius: 10,
-                    borderColor: value == answerID ? "black" : COLORS.primary,
+                    borderColor:
+                      value == answerID ? COLORS.primary : COLORS.primary,
                   }
             }
           >
@@ -541,31 +542,37 @@ const QuizScreen = ({ route, navigation }) => {
           {quizData.chaptersWithQuestions[questionIndex].imgURL == null ? (
             <View style={{ marginTop: 20 }}></View>
           ) : (
-            // <Image
-            //   source={require("../../../assets/placeHolder.jpeg")}
-            //   style={{
-            //     width: 200,
-            //     height: 200,
-            //     // marginTop: 5,
+            //  <Image
+            //             source={{
+            //               uri:
+            //                 webURL + quizData.chaptersWithQuestions[questionIndex].imgURL,
+            //             }}
+            //             style={{
+            //               width: 200,
+            //               height: 200,
+            //               marginTop: 5,
+            //               bottom: 5,
+            //               resizeMode: "contain",
+            //               alignSelf: "center",
+            //             }}
+            //           />
+            <View style={{ alignSelf: "center" }}>
+              <ImageModal
+                resizeMode="contain"
+                imageBackgroundColor="white"
+                style={{
+                  width: 250,
+                  height: 220,
 
-            //     resizeMode: "contain",
-            //     alignSelf: "center",
-            //   }}
-            // />
-            <Image
-              source={{
-                uri:
-                  webURL + quizData.chaptersWithQuestions[questionIndex].imgURL,
-              }}
-              style={{
-                width: 200,
-                height: 200,
-                marginTop: 5,
-                bottom: 5,
-                resizeMode: "contain",
-                alignSelf: "center",
-              }}
-            />
+                  marginVertical: 10,
+                }}
+                source={{
+                  uri:
+                    webURL +
+                    quizData.chaptersWithQuestions[questionIndex].imgURL,
+                }}
+              />
+            </View>
           )}
           <View
             style={{

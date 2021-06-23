@@ -71,19 +71,11 @@ const Login = ({ navigation }) => {
             source={require("../../assets/metalogo.png")}
             style={{ marginTop: 10, width: "80%", height: 100 }}
           /> */}
-          <Text
-            style={{
-              color: COLORS.primary,
-              padding: 5,
-              fontSize: SIZES.h1,
-              marginTop: -8,
-              marginLeft: 10,
-
-              backgroundColor: COLORS.white,
-            }}
-          >
-            korkortvegan
-          </Text>
+          <Image
+            source={require("../../../assets/icon.png")}
+            style={{ width: 120, height: 120, borderRadius: 100 }}
+          />
+          <Text style={{ fontSize: 20, color: "white" }}>körtkortsvägen</Text>
         </View>
         <View style={styles.bottomView}>
           <TextInput

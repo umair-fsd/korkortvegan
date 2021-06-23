@@ -3,19 +3,9 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import {
   Home,
-  Profile,
   Login,
-  PreAuthCheck,
-  QuizScreen,
-  ResultScreen,
-  ProgressScreen,
-  FinalQuizScreen,
-  DemoQuizScreen,
-  FinalResultScreen,
-  DemoResultScreen,
-  Terms,
+
   ///Remove on Final Build
-  TestScreen,
 } from "./src/screens";
 
 import { createStackNavigator } from "@react-navigation/stack";
@@ -31,6 +21,7 @@ const Stack = createStackNavigator();
 export default function App() {
   return (
     <Provider store={store}>
+      <StatusBar hidden />
       <NavigationContainer>
         <Stack.Navigator
           screenOptions={{
