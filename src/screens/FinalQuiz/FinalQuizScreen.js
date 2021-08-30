@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { RadioButton } from "react-native-paper";
 import CountDown from "react-native-countdown-component";
-
+import ImageModal from "react-native-image-modal";
 import {
   StyleSheet,
   Text,
@@ -398,31 +398,24 @@ const FinalQuizScreen = ({ route, navigation }) => {
           }}
         >
           {quizData.FinalExamQuestions[questionIndex].imgURL == null ? (
-            <Image
-              source={require("../../../assets/placeHolder.jpeg")}
-              style={{
-                width: 200,
-                height: 200,
-                // marginTop: 5,
-
-                resizeMode: "contain",
-                alignSelf: "center",
-              }}
-            />
+            <View></View>
           ) : (
-            <Image
-              source={{
-                uri: webURL + quizData.FinalExamQuestions[questionIndex].imgURL,
-              }}
-              style={{
-                width: 200,
-                height: 200,
-                marginTop: 5,
-                bottom: 5,
-                resizeMode: "contain",
-                alignSelf: "center",
-              }}
-            />
+            <View style={{ alignSelf: "center" }}>
+              <ImageModal
+                resizeMode="contain"
+                imageBackgroundColor="white"
+                style={{
+                  width: 250,
+                  height: 220,
+
+                  marginVertical: 10,
+                }}
+                source={{
+                  uri:
+                    webURL + quizData.FinalExamQuestions[questionIndex].imgURL,
+                }}
+              />
+            </View>
           )}
           <View
             style={{

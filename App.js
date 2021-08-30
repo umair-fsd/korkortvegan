@@ -2,20 +2,22 @@ import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import {
+  PreAuthCheck,
+  Login,
   Home,
   Profile,
-  Login,
-  PreAuthCheck,
+  Favourites,
   QuizScreen,
+  FinalQuizScreen,
   ResultScreen,
   ProgressScreen,
-  FinalQuizScreen,
-  DemoQuizScreen,
   FinalResultScreen,
   DemoResultScreen,
+  DemoQuizScreen,
   Terms,
-  ///Remove on Final Build
   TestScreen,
+
+  ///Remove on Final Build
 } from "./src/screens";
 
 import { createStackNavigator } from "@react-navigation/stack";
@@ -31,6 +33,7 @@ const Stack = createStackNavigator();
 export default function App() {
   return (
     <Provider store={store}>
+      <StatusBar hidden />
       <NavigationContainer>
         <Stack.Navigator
           screenOptions={{
