@@ -2,8 +2,20 @@ import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import {
-  Home,
+  PreAuthCheck,
   Login,
+  Home,
+  Profile,
+  Favourites,
+  QuizScreen,
+  FinalQuizScreen,
+  ResultScreen,
+  ProgressScreen,
+  FinalResultScreen,
+  DemoResultScreen,
+  DemoQuizScreen,
+  Terms,
+  TestScreen,
 
   ///Remove on Final Build
 } from "./src/screens";
