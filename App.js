@@ -5,6 +5,7 @@ import {
   PreAuthCheck,
   Login,
   Home,
+<<<<<<< HEAD
   Profile,
   Favourites,
   QuizScreen,
@@ -16,6 +17,9 @@ import {
   DemoQuizScreen,
   Terms,
   TestScreen,
+=======
+  Login,
+>>>>>>> 294ea46a4fa71a5253ed253772c528a0fb37b6ac
 
   ///Remove on Final Build
 } from "./src/screens";
