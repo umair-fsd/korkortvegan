@@ -49,6 +49,7 @@ build/
 local.properties
 *.iml
 *.hprof
+Source.zip
 
 # node.js
 #
