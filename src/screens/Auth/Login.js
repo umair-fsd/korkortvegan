@@ -123,6 +123,11 @@ const Login = ({ navigation }) => {
                     password,
                   })
                   .then((res) => {
+                    if (res.data.active == 0) {
+                      alert(res.data.error);
+                      setLoading(false);
+                      return;
+                    }
                     res.status == 200 ? alert("Welcome") : null;
 
                     dispatch(
@@ -145,7 +150,7 @@ const Login = ({ navigation }) => {
                   })
                   .catch((err) => {
                     setLoading(false);
-                    console.log(err);
+                    console.log(err.response.status);
                     alert("Invalid Username / Password");
                   });
               }

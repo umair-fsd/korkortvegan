@@ -49,6 +49,16 @@ const Header = ({ navigation }) => {
                   },
                 })
                 .then((res) => {
+                  ///check if user is Active
+                  if (res.data.active == 0) {
+                    alert(res.data.error);
+                    setLoading(false);
+                    navigation.reset({
+                      routes: [{ name: "Login" }],
+                    });
+                    return;
+                  }
+                  ///
                   console.log(res.data.message);
                   setLoading(false);
                   navigation.navigate("FinalQuizScreen", {

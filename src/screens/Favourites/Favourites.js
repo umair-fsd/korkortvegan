@@ -34,6 +34,16 @@ const Favourites = () => {
         },
       })
       .then((res) => {
+        ///check if user is Active
+        if (res.data.active == 0) {
+          alert(res.data.error);
+          setLoading(false);
+          navigation.reset({
+            routes: [{ name: "Login" }],
+          });
+          return;
+        }
+        ///
         Object.keys(res.data.SavedQuestions).length == 0
           ? setNoData(true)
           : setNoData(nodata);

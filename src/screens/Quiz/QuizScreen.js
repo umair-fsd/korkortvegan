@@ -256,6 +256,16 @@ const QuizScreen = ({ route, navigation }) => {
         }
       )
       .then((res) => {
+        ///check if user is Active
+        if (res.data.active == 0) {
+          alert(res.data.error);
+          setLoading(false);
+          navigation.reset({
+            routes: [{ name: "Login" }],
+          });
+          return;
+        }
+        ///
         setOptions(() => {
           return res.data;
         });
@@ -299,13 +309,13 @@ const QuizScreen = ({ route, navigation }) => {
                           : COLORS.red
                         : value == answerID
                         ? COLORS.selectionColor
-                        : COLORS.blue,
+                        : COLORS.white,
                     marginVertical: 8,
                     textAlign: "center",
                     fontSize: SIZES.h4,
                     alignSelf: "center",
                     width: "90%",
-                    borderWidth: value == answerID ? 2 : 0,
+                    borderWidth: value == answerID ? 2 : 1,
                     padding: 8,
                     borderRadius: 5,
                     color:
@@ -313,21 +323,23 @@ const QuizScreen = ({ route, navigation }) => {
                         ? COLORS.white
                         : value == answerID
                         ? COLORS.white
-                        : "white",
+                        : "black",
 
                     borderRadius: 10,
+                    borderColor:
+                      value == answerID ? COLORS.black : COLORS.primary,
                   }
                 : {
                     ////if toggle false //
                     marginRight: 10,
                     backgroundColor:
-                      value == answerID ? COLORS.selectionColor : COLORS.blue,
+                      value == answerID ? COLORS.selectionColor : COLORS.white,
                     marginVertical: 8,
                     textAlign: "center",
                     fontSize: SIZES.h4,
                     alignSelf: "center",
                     width: "90%",
-                    borderWidth: value == answerID ? 2 : 0,
+                    borderWidth: value == answerID ? 2 : 1,
                     padding: 8,
                     borderRadius: 5,
                     color:
@@ -335,9 +347,10 @@ const QuizScreen = ({ route, navigation }) => {
                         ? COLORS.white
                         : value == answerID
                         ? COLORS.white
-                        : "white",
+                        : "black",
 
                     borderRadius: 10,
+                    borderColor: value == answerID ? "black" : COLORS.primary,
                   }
             }
           >
@@ -709,6 +722,16 @@ const QuizScreen = ({ route, navigation }) => {
                   },
                 })
                 .then((res) => {
+                  ///check if user is Active
+                  if (res.data.active == 0) {
+                    alert(res.data.error);
+                    setLoading(false);
+                    navigation.reset({
+                      routes: [{ name: "Login" }],
+                    });
+                    return;
+                  }
+                  ///
                   if (res.data.CorrectAnswer.id == value) {
                     setAnswerID(res.data.CorrectAnswer.id); //Temp
                     //alert("Correct");
