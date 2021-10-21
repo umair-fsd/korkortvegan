@@ -183,7 +183,7 @@ const Profile = ({ navigation }) => {
 
                   console.log("Done.");
                   navigation.reset({
-                    routes: [{ name: "Login" }],
+                    routes: [{ name: "SignIn" }],
                   });
                 })
                 .catch((err) => {
