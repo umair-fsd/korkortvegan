@@ -3,18 +3,18 @@ import React from 'react'
 import { StyleSheet, Text, View, TouchableOpacity, Platform } from 'react-native'
 import {
     FontAwesome5,
-  } from "@expo/vector-icons";
+} from "@expo/vector-icons";
 import {COLORS} from '../constants/theme';
 
-const AppHeader = ({title, onPress}) => {
+const AppHeader = ({title, onPress, iconName}) => {
     return (
         <View style={styles.container}>
             <TouchableOpacity onPress={onPress}>
-                    <FontAwesome5 
-                        name="chevron-left"
-                        color={COLORS.black}
-                        size={20}
-                    />
+                <FontAwesome5 
+                    name={iconName}
+                    color={COLORS.black}
+                    size={20}
+                />
             </TouchableOpacity>
             <View style={styles.titleContainer}>
                 <Text style={styles.title}>

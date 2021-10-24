@@ -15,6 +15,7 @@ import axios from "axios";
 import { useDispatch, useSelector, webURL } from "react-redux";
 import { initUser, emptyCounters, setPagingStatus } from "../../redux/actions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import MyStatusBar from '../../components/myStatusBar';
 
 const SignIn = ({navigation}) => {
     const dispatch = useDispatch();
@@ -25,10 +26,10 @@ const SignIn = ({navigation}) => {
     const [loading, setLoading] = useState(false);
     const webURL = useSelector((state) => state.webURL);
     const renderLoginForm = () => {
-        useEffect(() => {
-          demoLogin();
-        }, []);
-        const demoLogin = async () => {
+    useEffect(() => {
+      demoLogin();
+    }, []);
+    const demoLogin = async () => {
           await axios
             .post(`${webURL}/api/login`, {
               headers: {
@@ -62,8 +63,60 @@ const SignIn = ({navigation}) => {
           // saving error
         }
     };
+    const onSubmit=async () => {
+      if (email == "") {
+        alert("Email Cannot Be Empty!");
+      } else if (password == "") {
+        alert("Password Cannot Be Empty");
+      } else {
+        setLoading(true);
+        await axios
+          .post(`${webURL}/api/login`, {
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            email:email.toLocaleLowerCase(),
+            password,
+          })
+          .then((res) => {
+            if (res.data.active == 0) {
+              alert(res.data.error);
+              setLoading(false);
+              return;
+            }
+            res.status == 200 ? alert("Welcome") : null;
+
+            dispatch(
+              initUser({
+                user_id: res.data.user_id,
+                token: res.data.token,
+                email,
+                firstName: res.data.first_name,
+                lastName: res.data.last_name,
+              })
+            );
+            //Store Data To Local
+            storeData(res.data.token, res.data.user_id, email);
+            setEmail("");
+            setPassword("");
+            setLoading(false);
+            navigation.reset({
+              routes: [{ name: "Home" }],
+            });
+          })
+          .catch((err) => {
+            setLoading(false);
+            console.log(err.response.status);
+            alert("Invalid Username / Password");
+          });
+      }
+    }
     return (
         <View style={styles.container}>
+            <MyStatusBar 
+                barStyle = "dark-content" 
+                backgroundColor = {COLORS.white} 
+            />
             <AppHeader 
                 title={"Sign in"}
 s            />
@@ -100,54 +153,7 @@ s            />
                     </TouchableOpacity>
                     <MyButton
                         title={"Signin"}
-                        onPress={async () => {
-                        if (email == "") {
-                          alert("Email Cannot Be Empty!");
-                        } else if (password == "") {
-                          alert("Password Cannot Be Empty");
-                        } else {
-                          setLoading(true);
-                          await axios
-                            .post(`${webURL}/api/login`, {
-                              headers: {
-                                "Content-Type": "application/x-www-form-urlencoded",
-                              },
-                              email:email.toLocaleLowerCase(),
-                              password,
-                            })
-                            .then((res) => {
-                              if (res.data.active == 0) {
-                                alert(res.data.error);
-                                setLoading(false);
-                                return;
-                              }
-                              res.status == 200 ? alert("Welcome") : null;
-          
-                              dispatch(
-                                initUser({
-                                  user_id: res.data.user_id,
-                                  token: res.data.token,
-                                  email,
-                                  firstName: res.data.first_name,
-                                  lastName: res.data.last_name,
-                                })
-                              );
-                              //Store Data To Local
-                              storeData(res.data.token, res.data.user_id, email);
-                              setEmail("");
-                              setPassword("");
-                              setLoading(false);
-                              navigation.reset({
-                                routes: [{ name: "Home" }],
-                              });
-                            })
-                            .catch((err) => {
-                              setLoading(false);
-                              console.log(err.response.status);
-                              alert("Invalid Username / Password");
-                            });
-                        }
-                      }}
+                        onPress={onSubmit}
                   />
                 </View> 
             </ScrollView>

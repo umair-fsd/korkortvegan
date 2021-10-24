@@ -1,12 +1,14 @@
 import React, {useState, useRef, useEffect} from 'react'
 import { View, FlatList, Animated, ScrollView } from 'react-native'
 import styles from './styles';
+import MyStatusBar from '../../components/myStatusBar';
 import data from './dummyData';
 import OnBoardItem from './onBoardItem';
 import Indicator from './indicator';
 import NextButton from './nextButton';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { COLORS } from "../../constants";
 
 const OnBoardScreen = (props) => {
     const navigation=useNavigation();
@@ -34,7 +36,7 @@ const OnBoardScreen = (props) => {
         setIndex(viewableItems[0].index);
     }).current;
      
-     const scrollTo=()=>{
+    const scrollTo=()=>{
         if(currentIndex<data.length-1){
             slideRef.current.scrollToIndex({ index: currentIndex+1 })
         }else{
@@ -50,6 +52,10 @@ const OnBoardScreen = (props) => {
     const viewConfig=useRef({viewAreaCoveragePercentThreshold:50}).current; 
     return (
         <View style={styles.mainContainer}>
+            <MyStatusBar 
+                barStyle = "dark-content" 
+                backgroundColor = {COLORS.white} 
+            />
             <View style={styles.scroll}>
                <FlatList  
                     data={data}

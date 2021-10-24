@@ -16,7 +16,7 @@ import {
   DemoQuizScreen,
   Terms,
   TestScreen,
-
+  Quiz
   ///Remove on Final Build
 } from "./src/screens";
 
@@ -48,7 +48,7 @@ export default function App() {
           <Stack.Screen name="Home" component={Tabs} />
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="PreAuthCheck" component={PreAuthCheck} />
-          <Stack.Screen name="QuizScreen" component={QuizScreen} />
+          <Stack.Screen name="QuizScreen" component={Quiz} />
           <Stack.Screen name="ResultScreen" component={ResultScreen} />
           <Stack.Screen name="DemoResultScreen" component={DemoResultScreen} />
           <Stack.Screen name="Terms" component={Terms} />
