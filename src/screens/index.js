@@ -13,6 +13,7 @@ import FinalResultScreen from "./ResultScreen/FinalResultScreen";
 import TestScreen from "./Tests/TestScreen";
 
 import Favourites from "./Favourites/Favourites";
+import Quiz from "./Quiz/Quiz";
 
 export {
   PreAuthCheck,
@@ -30,4 +31,5 @@ export {
   Terms,
   ///Remove On Final Build
   TestScreen,
+  Quiz,
 };

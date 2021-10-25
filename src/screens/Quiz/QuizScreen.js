@@ -211,7 +211,6 @@ const QuizScreen = ({ route, navigation }) => {
           <View
             style={{
               marginHorizontal: 3,
-
               borderRadius: 100,
               width: 30,
               height: 30,
