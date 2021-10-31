@@ -51,7 +51,7 @@ const RenderOverView = ({
           style={{
             borderColor: COLORS.colorBorder,
             borderRightWidth: 1,
-            width: 80,
+            width: 90,
             alignItems: "center",
             justifyContent: "center",
           }}

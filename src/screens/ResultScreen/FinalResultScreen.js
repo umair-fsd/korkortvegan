@@ -64,7 +64,6 @@ const FinalResultScreen = ({ route, navigation }) => {
       chapter_id={item.chapter_id}
     />
   );
-
   // const updateDB = async () => {
   //   const values = reduxState.reduce((r, c) => Object.assign(r, c), {});
   //   const finalResult = {
