@@ -29,6 +29,7 @@ import { store } from "./src/redux/store";
 import Tabs from "./src/navigation/tabs";
 import OnBoardScreen from "./src/screens/onBoard";
 import SignIn from "./src/screens/Auth/Signin";
+import FullFinalResultScreen from "./src/screens/ResultScreen/FullFinalResultScreen";
 
 const Stack = createStackNavigator();
 
@@ -48,13 +49,13 @@ export default function App() {
           <Stack.Screen name="Home" component={Tabs} />
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="PreAuthCheck" component={PreAuthCheck} />
-          <Stack.Screen name="QuizScreen" component={Quiz} />
+          <Stack.Screen name="QuizScreen" component={QuizScreen} />
           <Stack.Screen name="ResultScreen" component={ResultScreen} />
           <Stack.Screen name="DemoResultScreen" component={DemoResultScreen} />
           <Stack.Screen name="Terms" component={Terms} />
           <Stack.Screen
             name="FinalResultScreen"
-            component={FinalResultScreen}
+            component={FullFinalResultScreen}
           />
           <Stack.Screen name="ProgressScreen" component={ProgressScreen} />
           <Stack.Screen name="TestScreen" component={TestScreen} />

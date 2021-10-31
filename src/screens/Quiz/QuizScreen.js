@@ -770,7 +770,7 @@ const QuizScreen = ({ route, navigation }) => {
                       // setCounterKey((prevKey) => prevKey + 1);
                     } else {
                       navigation.reset({
-                        routes: [{ name: "ResultScreen" }],
+                        routes: [{ name: "FinalResultScreen" }],
                       });
                     }
                   } else {
@@ -805,7 +805,7 @@ const QuizScreen = ({ route, navigation }) => {
                       setCounterKey((prevKey) => prevKey + 1);
                     } else {
                       navigation.reset({
-                        routes: [{ name: "ResultScreen" }],
+                        routes: [{ name: "FinalResultScreen" }],
                       });
                     }
                     setValue("");
@@ -854,7 +854,7 @@ const QuizScreen = ({ route, navigation }) => {
                 setQuestionID(quizData.chaptersWithQuestions[questionIndex].id);
               } else {
                 navigation.reset({
-                  routes: [{ name: "ResultScreen" }],
+                  routes: [{ name: "FinalResultScreen" }],
                 });
               }
             }}
