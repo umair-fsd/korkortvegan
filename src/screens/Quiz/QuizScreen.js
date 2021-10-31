@@ -211,7 +211,6 @@ const QuizScreen = ({ route, navigation }) => {
           <View
             style={{
               marginHorizontal: 3,
-
               borderRadius: 100,
               width: 30,
               height: 30,
@@ -771,7 +770,7 @@ const QuizScreen = ({ route, navigation }) => {
                       // setCounterKey((prevKey) => prevKey + 1);
                     } else {
                       navigation.reset({
-                        routes: [{ name: "ResultScreen" }],
+                        routes: [{ name: "FinalResultScreen" }],
                       });
                     }
                   } else {
@@ -806,7 +805,7 @@ const QuizScreen = ({ route, navigation }) => {
                       setCounterKey((prevKey) => prevKey + 1);
                     } else {
                       navigation.reset({
-                        routes: [{ name: "ResultScreen" }],
+                        routes: [{ name: "FinalResultScreen" }],
                       });
                     }
                     setValue("");
@@ -855,7 +854,7 @@ const QuizScreen = ({ route, navigation }) => {
                 setQuestionID(quizData.chaptersWithQuestions[questionIndex].id);
               } else {
                 navigation.reset({
-                  routes: [{ name: "ResultScreen" }],
+                  routes: [{ name: "FinalResultScreen" }],
                 });
               }
             }}

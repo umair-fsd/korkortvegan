@@ -24,33 +24,31 @@ const Header = ({ navigation }) => {
       }}
       androidStatusBarColor={COLORS.primary}
     >
-      <Left>
+      <View>
         <Ionicons
           name="home-sharp"
           size={24}
           color={COLORS.primary}
+          style={{marginHorizontal:10}}
           onPress={() => {
             dispatch(emptyProgress());
             dispatch(emptyCounters());
-
             navigation.reset({
               routes: [{ name: "Home" }],
             });
           }}
         />
-      </Left>
-
+      </View>
       <Text
         style={{
           fontSize: SIZES.h1,
           fontWeight: "300",
           color: COLORS.primary,
-          left: 50,
+          left: 90,
         }}
       >
         Your Result
       </Text>
-
       <Right></Right>
     </HeaderTop>
   );
