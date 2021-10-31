@@ -1,0 +1,1 @@
+export const forwardArrow=(require('../../assets/forward.png'))

@@ -32,7 +32,7 @@ const Header = ({ navigation }) => {
           fontSize: SIZES.h1,
           alignSelf: "center",
           fontWeight: "bold",
-          color: COLORS.primary,
+          color: COLORS.green,
         }}
       >
         Quizes
@@ -78,7 +78,7 @@ const Header = ({ navigation }) => {
               textAlign: "center",
               alignSelf: "flex-end",
               fontSize: SIZES.h3,
-              backgroundColor: COLORS.primary,
+              backgroundColor: COLORS.green,
               padding: 10,
               borderRadius: 10,
               color: COLORS.white,
