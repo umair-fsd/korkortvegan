@@ -14,7 +14,7 @@ import { SIZES, COLORS } from "../../constants";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import { setPagingStatus, emptyCounters } from "../../redux/actions";
-import { Ionicons, AntDesign } from "@expo/vector-icons";
+import { Ionicons, AntDesign } from '@expo/vector-icons';
 
 const Chapter = ({ chapterName, id }) => {
   const [loading, setLoading] = useState(false);
@@ -170,7 +170,7 @@ const Chapter = ({ chapterName, id }) => {
   );
 };
 
-const QuizChapter = ({ chapterName, id }) => {
+const QuizChapter=({ chapterName, id })=>{
   const [loading, setLoading] = useState(false);
   const [loadingResetProgress, setLoadingResetProgress] = useState(false);
   const webURL = useSelector((state) => state.webURL);
@@ -347,7 +347,7 @@ const RenderChapters = ({ navigation }) => {
       });
   };
   const renderItem = ({ item }) => (
-    <QuizChapter chapterName={item.chapterName} id={item.id} />
+      <QuizChapter chapterName={item.chapterName} id={item.id} />
   );
 
   const loadingView = () => {
@@ -378,7 +378,7 @@ const RenderChapters = ({ navigation }) => {
           renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ marginVertical: 10 }}
+          contentContainerStyle={{marginVertical:10,}}
         />
       )}
     </View>

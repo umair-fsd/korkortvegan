@@ -347,7 +347,7 @@ const { height, width } = useWindowDimensions();
                         alignItems:'center',
                         justifyContent:'center',
                     }}> 
-                     </View>
+                    </View>
                 </View>
                 <View style={{
                       flex:1,
