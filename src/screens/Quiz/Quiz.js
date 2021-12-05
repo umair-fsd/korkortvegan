@@ -14,7 +14,8 @@ import {
   Modal,
   ScrollView,
   useWindowDimensions,
-  Platform
+  Platform,
+  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch, useSelector } from "react-redux";
@@ -25,7 +26,7 @@ import {
   FontAwesome5,
   Ionicons,
   Entypo,
-  FontAwesome
+  FontAwesome,
 } from "@expo/vector-icons";
 import * as Speech from "expo-speech";
 import { SIZES, COLORS } from "../../constants";
@@ -42,14 +43,14 @@ import {
   setTimer,
   setOptions,
 } from "../../redux/actions";
-import AppHeader from '../../components/appHeader'
-import MyStatusBar from '../../components/myStatusBar';
-import Ripple from 'react-native-material-ripple';
-
+import AppHeader from "../../components/appHeader";
+import MyStatusBar from "../../components/myStatusBar";
+import Ripple from "react-native-material-ripple";
+import { getCheckColor } from "../../utils/getColors";
 
 const Quiz = ({ route, navigation }) => {
-const { height, width } = useWindowDimensions();
-     ////Timer Hooks///
+  const { height, width } = useWindowDimensions();
+  ////Timer Hooks///
   var [count, setCount] = useState(0);
   const [running, setRunning] = useState(false);
   const [modalVisible, setModalVisible] = useState(true);
@@ -67,6 +68,7 @@ const { height, width } = useWindowDimensions();
   const [loading, setLoading] = useState(true);
   const [toggleOverView, setToggleOverView] = useState(false);
   const [questions, setQuestions] = useState("");
+
   const [options, setOptions] = useState(() => {
     return;
   }); ///// Local State of options
@@ -107,6 +109,124 @@ const { height, width } = useWindowDimensions();
       // saving error
     }
   };
+
+  async function handleNext(v) {
+    // if (value == "" || value == null) {
+    //   alert("Please Select An Option");
+    //   return null;
+    // }
+
+    setIsSelected(true);
+
+    await axios
+      .get(`${webURL}/api/getCorrectAnswer/${questionID}`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      })
+      .then((res) => {
+        console.log(res);
+        ///check if user is Active
+        if (res.data.active == 0) {
+          alert(res.data.error);
+          setLoading(false);
+          navigation.reset({
+            routes: [{ name: "Login" }],
+          });
+          return;
+        }
+        ///
+        if (res.data.CorrectAnswer.id == v) {
+          setAnswerID(res.data.CorrectAnswer.id); //Temp
+
+          updateDB(questionID, v);
+          dispatch(
+            setProgress({
+              [questionID]: v,
+            })
+          );
+          dispatch(
+            updatePagingStatus([
+              {
+                question: questionID,
+                status: "correct",
+              },
+            ])
+          );
+          //console.log(Object.keys(userProgress).length);
+          dispatch(setCorrectAnswers());
+
+          /////if questions quiz is completed?
+          if (
+            questionIndex <
+            Object.keys(quizData.chaptersWithQuestions).length - 1
+          ) {
+            setQuestionIndex(++questionIndex);
+            setQuestionID(() => {
+              return quizData.chaptersWithQuestions[questionIndex].id;
+            });
+            // setCounterKey((prevKey) => prevKey + 1);
+          } else {
+            navigation.reset({
+              routes: [
+                {
+                  name: "FinalResultScreen",
+                  params: {
+                    totalQuestions: Object.keys(quizData.chaptersWithQuestions)
+                      .length,
+                  },
+                },
+              ],
+            });
+          }
+        } else {
+          // alert("False");
+          updateDB(questionID, v); //Update Progress
+          dispatch(
+            setProgress({
+              [questionID]: v,
+            })
+          );
+          dispatch(
+            updatePagingStatus([
+              {
+                question: questionID,
+                status: "wrong",
+              },
+            ])
+          );
+
+          //console.log(Object.keys(userProgress).length);
+          dispatch(setWrongAnswers());
+
+          //   console.log(reduxWrongAnswers);
+          if (
+            questionIndex <
+            Object.keys(quizData.chaptersWithQuestions).length - 1
+          ) {
+            setQuestionIndex(++questionIndex);
+            setQuestionID(() => {
+              return quizData.chaptersWithQuestions[questionIndex].id;
+            });
+            setCounterKey((prevKey) => prevKey + 1);
+          } else {
+            navigation.reset({
+              routes: [
+                {
+                  name: "FinalResultScreen",
+                  params: {
+                    totalQuestions: Object.keys(quizData.chaptersWithQuestions)
+                      .length,
+                  },
+                },
+              ],
+            });
+          }
+          setValue("");
+          // console.log(reduxState);
+        }
+      });
+  }
   const getData = async () => {
     try {
       const value = await AsyncStorage.getItem("@timer");
@@ -124,7 +244,6 @@ const { height, width } = useWindowDimensions();
         // value previously stored
         setCount(value);
         dispatch(setTimer(value));
-        console.log(value);
       }
     } catch (e) {
       // error reading value
@@ -155,8 +274,7 @@ const { height, width } = useWindowDimensions();
     })
       .then((res) => {
         //  console.log(q + "=>" + a);
-        console.log(res.data);
-        console.log("DoneUntil: " + questionID);
+
         dispatch(setProgress([]));
       })
       .catch((err) => {
@@ -180,7 +298,7 @@ const { height, width } = useWindowDimensions();
       })
       .then((res) => {
         dispatch(setPagingStatus(res.data.ChapterQuestionStatus));
-        console.log(Object.keys(res.data.ChapterQuestionStatus).length);
+
         setLoading(false);
       });
   };
@@ -196,7 +314,6 @@ const { height, width } = useWindowDimensions();
       >
         <TouchableOpacity
           onPress={() => {
-            console.log(index);
             setQuestionID(() => {
               return quizData.chaptersWithQuestions[index].id;
             });
@@ -229,7 +346,7 @@ const { height, width } = useWindowDimensions();
               style={{
                 color: "white",
                 textAlign: "center",
-                fontSize: item.question == questionID ? SIZES.h2 : SIZES.h4,
+                fontSize: item.question == questionID ? SIZES.h3 + 4 : SIZES.h4,
                 fontWeight: item.question == questionID ? "bold" : "300",
               }}
             >
@@ -241,7 +358,6 @@ const { height, width } = useWindowDimensions();
     ) : null;
 
   const fetchOptions = async () => {
-    console.log("Question ID is : " + questionID);
     setLoading(true);
     const res = await axios
       .get(
@@ -266,13 +382,12 @@ const { height, width } = useWindowDimensions();
         setOptions(() => {
           return res.data;
         });
-        console.log(options);
 
         setValue(res.data.userAnswerID);
 
         setLoading(false);
       });
-    console.log("value ====" + value);
+
     // console.log(questionID);
   };
   const renderItem = ({ item }) => (
@@ -286,262 +401,468 @@ const { height, width } = useWindowDimensions();
 
   const OptionBox = ({ answer, answerID, correctAnswerID, userAnswerID }) => {
     return (
-            <Ripple 
-                onPress={() => {
-                    setValue(answerID);
-                }}
-                rippleDuration={300}
-                style={{
-                height:60,
-                width:'90%',
-                alignSelf:'center',
-                backgroundColor:COLORS.white,
-                flexDirection:'row',
-                alignItems:'center',
-                borderBottomWidth:1,
-                borderBottomColor:COLORS.gray,
-            }}>
-                <View style={{
-                    width:50,
-                    alignItems:'center',
-                }}>
-                  {/* <View style={{
-                        height:20,
-                        width:20,
-                        borderWidth:1,
-                        borderRadius:10,
-                        borderColor: COLORS.red,
-                        alignItems:'center',
-                        justifyContent:'center'
-                    }}>
-                    <Entypo 
-                        name="cross" 
-                        size={15} 
-                        color={COLORS.red} 
-                    /> 
-                  </View> */}
-                  {/* correct */}
-                  {/* <View style={{
-                        height:20,
-                        width:20,
-                        borderWidth:1,
-                        borderRadius:10,
-                        borderColor: COLORS.green,
-                        alignItems:'center',
-                        justifyContent:'center'
-                    }}>
-                    <Entypo 
-                        name="check" 
-                        size={15} 
-                        color={COLORS.green} 
-                    /> 
-                  </View> */}
-                  
-                  {/* default */}
-                    <View style={{
-                        height:20,
-                        width:20,
-                        borderWidth:1,
-                        borderRadius:10,
-                        borderColor: COLORS.green,
-                        alignItems:'center',
-                        justifyContent:'center',
-                    }}> 
-                    </View>
-                </View>
-                <View style={{
-                      flex:1,
-                    }}>
-                  <Text style={{
-                      paddingHorizontal:10
-                    }}>
-                      {answer}
-                  </Text>                
-                  </View>
-            </Ripple>
+      <Ripple
+        onPress={() => {
+          setValue(answerID);
+
+          handleNext(answerID);
+        }}
+        rippleDuration={300}
+        style={{
+          height: 60,
+          width: "90%",
+          alignSelf: "center",
+          backgroundColor: COLORS.white,
+          flexDirection: "row",
+          alignItems: "center",
+          borderBottomWidth: 1,
+          borderBottomColor: COLORS.gray,
+        }}
+      >
+        <View
+          style={{
+            width: 50,
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              height: 20,
+              width: 20,
+              borderWidth: 1,
+              borderRadius: 10,
+              backgroundColor: getCheckColor(value, answerID),
+              borderColor: COLORS.green,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          ></View>
+        </View>
+        <View
+          style={{
+            flex: 1,
+          }}
+        >
+          <Text
+            style={{
+              paddingHorizontal: 10,
+            }}
+          >
+            {answer}
+          </Text>
+        </View>
+      </Ripple>
     );
   };
-    return (
-        <View style={styles.container}>
-            <MyStatusBar 
-                barStyle = "dark-content" 
-                backgroundColor = {COLORS.white} 
-            />
-            <AppHeader 
-                title={chapterName}
-                iconName={"chevron-left"}
-                onPress={()=>navigation.goBack()}
-            />
-            <ScrollView contentContainerStyle={styles.scroll}>
-                <View style={{ alignSelf: "center" }}>
-                    <ImageModal
-                        resizeMode="contain"
-                        imageBackgroundColor="white"
-                        style={{
-                        width,
-                        height: 220,
-                        marginVertical: 10,
-                        }}
-                        source={{
-                        uri:
-                            webURL +
-                            quizData.chaptersWithQuestions[questionIndex].imgURL,
-                        }}
-                    />
-                </View>
-                <View
-                    style={{
-                    flex: 0.5,
-                    marginTop: -5,
-                    margin: 5,
-                    borderRadius: 20,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: 0,
-                    }}
-                >
-                    <Text
-                    style={{
-                        fontSize: SIZES.h2,
-                        alignSelf: "center",
-                        color: COLORS.black,
-                        textAlign: "center",
-                        marginHorizontal: 15,
-                        fontWeight: Platform.OS==='ios' ? '700'  : 'bold'
-                    }}>
-                        {quizData.chaptersWithQuestions[questionIndex].question}
-                    </Text>
-                    <View
-                    style={{
-                        alignSelf: "flex-end",
-                        position: "absolute",
-                        bottom: 10,
-                        right: 10,
-                    }}
-                    >
-                    <MaterialCommunityIcons
-                        name="account-voice"
-                        size={24}
-                        color="black"
-                        style={{ alignSelf: "flex-end" }}
-                        onPress={speak}
-                    />
-                    </View>
-                </View>
-
-                <View style={styles.optionsContainer}>
-                    <FlatList
-                    data={options.options}
-                    keyExtractor={(item) => item.id.toString()}
-                    renderItem={renderItem}
-                    />
-                </View>
-            </ScrollView>
-          <View style={{
-                backgroundColor:'transparent'
-              }}>
-            <View
-                style={{
-                      height:50,
-                      flexDirection: "row",
-                      justifyContent:'space-evenly',
-                      alignSelf:'center',
-                      alignItems:'center',
-                      width:'95%',
-                      backgroundColor: "#28282B",
-                      borderRadius:10,
-                      paddingHorizontal:10,
-                      position:'absolute',
-                      bottom:30
-                  }}>
-                  <Ripple 
-                     rippleCentered
-                     rippleDuration={300}
-                    style={{
-                      height:'100%',
-                      alignItems:'center',
-                      justifyContent:'space-evenly',
-                      flexDirection:'row',
-                    }}>
-                    <FontAwesome name="calendar-check-o" size={20} color="white" />
-                      <Text style={{
-                        color:COLORS.white,
-                        paddingHorizontal:10,
-                        fontWeight:Platform.OS==='ios' ? '600' : 'bold'
-                      }}>
-                        {"Answered \n question"}
-                      </Text>
-                  </Ripple>
-                      
-                      <View style={{
-                        height:35, 
-                        borderColor:COLORS.white,
-                        borderWidth:0.5
-                      }} />
-
-                  <Ripple 
-                    rippleCentered
-                    rippleDuration={300}
-                    style={{
-                      height:'100%',
-                      alignItems:'center',
-                      justifyContent:'space-evenly',
-                      flexDirection:'row',
-                      paddingHorizontal:10,
-                    }}>
-                    <Ionicons name="bookmark-outline" size={20} color="white" />
-                      <Text style={{
-                        color:COLORS.white,
-                        paddingHorizontal:10,
-                        fontWeight:Platform.OS==='ios' ? '600' : 'bold'
-                      }}>
-                        {"Mark"}
-                      </Text>
-                  </Ripple>
-                      
-                      <View style={{
-                        height:35, 
-                        borderColor:COLORS.white,
-                        borderWidth:0.5
-                      }} />
-
-                  <Ripple 
-                      rippleCentered
-                      rippleDuration={300}
-                      style={{
-                        height:'100%',
-                        alignItems:'center',
-                        justifyContent:'space-evenly',
-                        flexDirection:'row',
-                      }}>
-                    <Ionicons name="checkmark" size={20} color="white" />
-                      <Text style={{
-                        color:COLORS.white,
-                        paddingHorizontal:10,
-                        fontWeight:Platform.OS==='ios' ? '600' : 'bold'
-                      }}>
-                        {"Correct test"}
-                      </Text>
-                  </Ripple>
-                  
-                </View>
-            </View>
+  return (
+    <View style={styles.container}>
+      <MyStatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
+      <AppHeader
+        totalQuestions={Object.keys(quizData.chaptersWithQuestions).length}
+        currentQuestion={questionIndex + 1}
+        screen={"QUIZ"}
+        timerValue={timerValue}
+        count={count}
+        running={running}
+        key={key}
+        title={chapterName}
+        iconName={"chevron-left"}
+        onPress={() => navigation.goBack()}
+      />
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={{ alignSelf: "center" }}>
+          <ImageModal
+            resizeMode="contain"
+            imageBackgroundColor="white"
+            style={{
+              width,
+              height: 170,
+              marginVertical: 10,
+            }}
+            source={{
+              uri:
+                webURL + quizData.chaptersWithQuestions[questionIndex].imgURL,
+            }}
+          />
         </View>
-    )
-}
+        <View
+          style={{
+            flex: 0.5,
+            marginTop: -5,
+            margin: 5,
+            borderRadius: 20,
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 0,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: SIZES.h3 + 3,
+              alignSelf: "center",
+              color: COLORS.black,
+              textAlign: "center",
+              marginHorizontal: 15,
+              fontWeight: "bold",
+            }}
+          >
+            {quizData.chaptersWithQuestions[questionIndex].question}
+          </Text>
+          <View
+            style={{
+              alignSelf: "flex-end",
+              position: "absolute",
+              bottom: 10,
+              right: 10,
+            }}
+          >
+            <MaterialCommunityIcons
+              name="account-voice"
+              size={24}
+              color="black"
+              style={{ alignSelf: "flex-end" }}
+              onPress={speak}
+            />
+          </View>
+        </View>
 
-export default Quiz
+        <View style={styles.optionsContainer}>
+          <FlatList
+            data={options?.options}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
+          />
+        </View>
+      </ScrollView>
+
+      <View
+        style={{
+          backgroundColor: "transparent",
+        }}
+      >
+        {toggleOverView && (
+          <FlatList
+            style={{ marginBottom: 20 }}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={pagingStatus}
+            keyExtractor={(item) => item.question.toString()}
+            renderItem={renderListQuestions}
+            key={questionIndex}
+          />
+        )}
+
+        <View
+          style={{
+            height: 50,
+            flexDirection: "row",
+            justifyContent: "space-evenly",
+            alignSelf: "center",
+            alignItems: "center",
+            width: "95%",
+            backgroundColor: "#28282B",
+            borderRadius: 10,
+            paddingHorizontal: 10,
+            position: "relative",
+            bottom: 10,
+          }}
+        >
+          <Ripple
+            rippleCentered
+            rippleDuration={300}
+            onPress={() => {
+              setToggleOverView(!toggleOverView);
+            }}
+            style={{
+              height: "100%",
+              alignItems: "center",
+              justifyContent: "space-evenly",
+              flexDirection: "row",
+            }}
+          >
+            <FontAwesome name="calendar-check-o" size={20} color="white" />
+            <Text
+              style={{
+                color: COLORS.white,
+                paddingHorizontal: 10,
+                fontWeight: Platform.OS === "ios" ? "600" : "bold",
+              }}
+            >
+              {"Answered \n question"}
+            </Text>
+          </Ripple>
+
+          <View
+            style={{
+              height: 35,
+              borderColor: COLORS.white,
+              borderWidth: 0.5,
+            }}
+          />
+
+          <Ripple
+            rippleCentered
+            rippleDuration={300}
+            onPress={async () => {
+              await axios({
+                method: "put",
+                url: `${webURL}/api/saveQuestion`,
+                headers: {
+                  Authorization: `Bearer ${user.token}`,
+                  "Content-Type": "application/x-www-form-urlencoded",
+                },
+                data: qs.stringify({
+                  user_id: user.user_id,
+                  question_id: questionID,
+                }),
+              })
+                .then((res) => {
+                  dispatch(
+                    updatePagingStatus([
+                      {
+                        question: questionID,
+                        status: "favorite",
+                      },
+                    ])
+                  );
+                  alert("Added To Favourites");
+                })
+                .catch((err) => {
+                  console.log("Error", err.response.data);
+                });
+            }}
+            style={{
+              height: "100%",
+              alignItems: "center",
+              justifyContent: "space-evenly",
+              flexDirection: "row",
+              paddingHorizontal: 10,
+            }}
+          >
+            <Ionicons name="bookmark-outline" size={20} color="white" />
+            <Text
+              style={{
+                color: COLORS.white,
+                paddingHorizontal: 10,
+                fontWeight: Platform.OS === "ios" ? "600" : "bold",
+              }}
+            >
+              {"Mark"}
+            </Text>
+          </Ripple>
+
+          <View
+            style={{
+              height: 35,
+              borderColor: COLORS.white,
+              borderWidth: 0.5,
+            }}
+          />
+
+          <Ripple
+            rippleCentered
+            rippleDuration={300}
+            onPress={() => {
+              navigation.reset({
+                routes: [
+                  {
+                    name: "FinalResultScreen",
+                    params: {
+                      totalQuestions: Object.keys(
+                        quizData.chaptersWithQuestions
+                      ).length,
+                    },
+                  },
+                ],
+              });
+            }}
+            style={{
+              height: "100%",
+              alignItems: "center",
+              justifyContent: "space-evenly",
+              flexDirection: "row",
+            }}
+          >
+            <Ionicons name="checkmark" size={20} color="white" />
+            <Text
+              style={{
+                color: COLORS.white,
+                paddingHorizontal: 5,
+                fontWeight: Platform.OS === "ios" ? "600" : "bold",
+              }}
+            >
+              {"Correct test"}
+            </Text>
+          </Ripple>
+        </View>
+      </View>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={false}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <View style={{ backgroundColor: "white" }}>
+              <Text>Overview</Text>
+              <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                data={pagingStatus}
+                keyExtractor={(item) => item.question.toString()}
+                renderItem={renderListQuestions}
+                key={questionIndex}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        style={{ position: "absolute" }}
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          Alert.alert("Modal has been closed.");
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>Start Chapter With Timer? </Text>
+            <View style={{ flexDirection: "row" }}>
+              <TouchableOpacity
+                style={{
+                  ...styles.openButton,
+                  backgroundColor: "green",
+                  marginHorizontal: 5,
+                  borderRadius: 5,
+                }}
+                onPress={() => {
+                  storeData("3000");
+                  dispatch(setTimer(3000));
+                  setCount(3000);
+                  setRunning(true);
+                  setKey(key + 1);
+                  setModalVisible(!modalVisible);
+                }}
+              >
+                <Text style={styles.textStyle}>Yes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  ...styles.openButton,
+                  backgroundColor: "red",
+                  marginLeft: 30,
+                  borderRadius: 5,
+                }}
+                onPress={async () => {
+                  try {
+                    await AsyncStorage.setItem("@timer", "0");
+                  } catch (e) {
+                    // saving error
+                  }
+                  dispatch(setTimer(0));
+                  setCount(0);
+                  setRunning(false);
+                  setModalVisible(!modalVisible);
+                }}
+              >
+                <Text style={styles.textStyle}>No</Text>
+              </TouchableOpacity>
+            </View>
+            {contuniue == true ? (
+              <TouchableOpacity
+                onPress={async () => {
+                  const val = await AsyncStorage.getItem("@timer");
+                  console.log(val);
+                  storeData(val);
+                  dispatch(setTimer(val));
+                  setCount(0);
+                  setRunning(true);
+                  setModalVisible(!modalVisible);
+                }}
+              >
+                <View style={{ marginTop: 20 }}>
+                  <Text style={{ color: COLORS.primary }}>
+                    Continue with old timer
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ) : (
+              <></>
+            )}
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+};
+
+export default Quiz;
 
 const styles = StyleSheet.create({
-    container:{
-        flex:1,
-        backgroundColor:COLORS.lightGray1
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.lightGray1,
+  },
+  scroll: {
+    flex: 1,
+  },
+  optionsContainer: {
+    marginBottom: 3,
+    flex: 1,
+  },
+  centeredView: {
+    position: "absolute",
+    width: "80%",
+    bottom: "30%",
+    left: "10%",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+  },
+  modalView: {
+    width: "100%",
+    borderRadius: 10,
+    margin: 20,
+    backgroundColor: "white",
+
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
     },
-    scroll:{
-        flex:1,
-    },
-    optionsContainer: {
-        marginBottom: 3,
-        flex: 1,
-    },
-})
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+  },
+  buttonOpen: {
+    backgroundColor: "#F194FF",
+  },
+  buttonClose: {
+    backgroundColor: "#2196F3",
+  },
+  textStyle: {
+    borderRadius: 5,
+    color: "white",
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
+  },
+});

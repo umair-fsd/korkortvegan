@@ -1,7 +1,5 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { RadioButton } from "react-native-paper";
-import CountDown from "react-native-countdown-component";
 import ImageModal from "react-native-image-modal";
 import {
   StyleSheet,
@@ -13,7 +11,13 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Animated,
+  Modal,
+  ScrollView,
+  useWindowDimensions,
+  Platform,
+  Alert,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch, useSelector } from "react-redux";
 import qs from "qs";
 import {
@@ -21,11 +25,14 @@ import {
   MaterialCommunityIcons,
   FontAwesome5,
   Ionicons,
+  Entypo,
+  FontAwesome,
 } from "@expo/vector-icons";
 import * as Speech from "expo-speech";
 import { SIZES, COLORS } from "../../constants";
-import { CountdownCircleTimer } from "react-native-countdown-circle-timer";
-import { Header, Title, Right, Left } from "native-base";
+import { CountdownCircleTimer } from "react-native-countdown-circle-timer"; //Old Timer lib..
+import CountDown from "react-native-countdown-component";
+import { Header } from "native-base";
 import {
   setProgress,
   setCorrectAnswers,
@@ -33,34 +40,51 @@ import {
   setUnAnswered,
   updatePagingStatus,
   setPagingStatus,
+  setTimer,
+  setOptions,
 } from "../../redux/actions";
+import AppHeader from "../../components/appHeader";
+import MyStatusBar from "../../components/myStatusBar";
+import Ripple from "react-native-material-ripple";
+import { getCheckColor } from "../../utils/getColors";
 
 const FinalQuizScreen = ({ route, navigation }) => {
+  const { quizData, chapterName, id, qID, message, doneUntil } = route.params;
+  const { height, width } = useWindowDimensions();
+  const [loading, setLoading] = useState(false);
+  ////Timer Hooks///
+  var [count, setCount] = useState(3000);
+  const [running, setRunning] = useState(true);
+
+  const timerValue = useSelector((state) => state.timerValue);
+  //const options = useSelector((state) => state.options);
+  const [key, setKey] = useState(0);
+
+  /////End////
+
   const user = useSelector((state) => state.user);
   const webURL = useSelector((state) => state.webURL);
-  const reduxState = useSelector((state) => state.userProgress);
-  const pagingStatus = useSelector((state) => state.pagingStatus);
-  const { quizData, chapterName, id, qID, message, doneUntil } = route.params;
-  const [loading, setLoading] = useState(true);
-  const [questions, setQuestions] = useState("");
-  const [options, setOptions] = useState("");
-  const [userProgress, setUserProgress] = useState([]);
-  const [isSelected, setIsSelected] = useState(false);
-  const [submit, canSubmit] = useState(false);
-  const [skip, canSkip] = useState(false);
+
+  const [toggleOverView, setToggleOverView] = useState(false);
+
+  const [options, setOptions] = useState(() => {
+    return;
+  }); ///// Local State of options
+
   var [questionIndex, setQuestionIndex] = useState(
     doneUntil == -1 || doneUntil == null ? 0 : doneUntil
   );
-  const [questionID, setQuestionID] = useState(qID);
+
   const [counterKey, setCounterKey] = useState(0);
-  const [value, setValue] = React.useState("");
+  const [value, setValue] = useState(() => {
+    return "";
+  });
   const dispatch = useDispatch();
-  const reduxCorrectAnswers = useSelector((state) => state.correctAnswers);
-  const reduxWrongAnswers = useSelector((state) => state.wrongAnswers);
-  const reduxUnAnswered = useSelector((state) => state.unAnswered);
 
+  const [questionID, setQuestionID] = useState(qID);
+
+  console.log("QUIZ DATA", quizData);
   //////////USE EFFECTS////////
-
   useEffect(() => {
     setCounterKey(counterKey + 1);
     console.log(message);
@@ -72,13 +96,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
     fetchOptions();
   }, [questionID]);
 
-  ////UpdateDB////
-
   const updateDB = async (q, a) => {
-    // const values = reduxState.reduce((r, c) => Object.assign(r, c), {});
-    // const finalResult = {
-    // UserProgress: values,
-    //  };
     await axios({
       method: "put",
       url: `${webURL}/api/updateUserProgressFinalExam/${user.user_id}`,
@@ -105,103 +123,152 @@ const FinalQuizScreen = ({ route, navigation }) => {
       });
   };
 
-  ///Text To Speech ///
-  const speak = () => {
-    Speech.speak(quizData.FinalExamQuestions[questionIndex].question, {
-      language: "sv-SE",
-    });
-  };
+  async function handleNext(v) {
+    // if (value == "" || value == null) {
+    //   alert("Please Select An Option");
+    //   return null;
+    // }
 
-  ///////Fetch Jump To Question///////////
+    // setIsSelected(true);
 
-  const jumpToQuestion = async () => {
-    setLoading(true);
     await axios
-      .get(`${webURL}/api/getQuestionStatus/${user.user_id}/${id}`, {
+      .get(`${webURL}/api/getCorrectAnswer/${questionID}`, {
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
       })
       .then((res) => {
-        dispatch(setPagingStatus(res.data.QuestionStatus));
-        console.log(Object.keys(res.data.QuestionStatus).length);
-        setLoading(false);
+        console.log(res);
+        ///check if user is Active
+        if (res.data.active == 0) {
+          alert(res.data.error);
+          setLoading(false);
+          navigation.reset({
+            routes: [{ name: "Login" }],
+          });
+          return;
+        }
+        ///
+        if (res.data.CorrectAnswer.id == v) {
+          // setAnswerID(res.data.CorrectAnswer.id); //Temp
+
+          updateDB(questionID, v);
+          dispatch(
+            setProgress({
+              [questionID]: v,
+            })
+          );
+          dispatch(
+            updatePagingStatus([
+              {
+                question: questionID,
+                status: "correct",
+              },
+            ])
+          );
+          //console.log(Object.keys(userProgress).length);
+          dispatch(setCorrectAnswers());
+
+          /////if questions quiz is completed?
+          if (
+            questionIndex <
+            Object.keys(quizData.FinalExamQuestions).length - 1
+          ) {
+            setQuestionIndex(++questionIndex);
+            setQuestionID(() => {
+              return quizData.FinalExamQuestions[questionIndex].id;
+            });
+            // setCounterKey((prevKey) => prevKey + 1);
+          } else {
+            navigation.reset({
+              routes: [
+                {
+                  name: "FinalResultScreen",
+                  params: {
+                    totalQuestions: Object.keys(quizData.FinalExamQuestions)
+                      .length,
+                  },
+                },
+              ],
+            });
+          }
+        } else {
+          // alert("False");
+          updateDB(questionID, v); //Update Progress
+          dispatch(
+            setProgress({
+              [questionID]: v,
+            })
+          );
+          dispatch(
+            updatePagingStatus([
+              {
+                question: questionID,
+                status: "wrong",
+              },
+            ])
+          );
+
+          //console.log(Object.keys(userProgress).length);
+          dispatch(setWrongAnswers());
+
+          //   console.log(reduxWrongAnswers);
+          if (
+            questionIndex <
+            Object.keys(quizData.FinalExamQuestions).length - 1
+          ) {
+            setQuestionIndex(++questionIndex);
+            setQuestionID(() => {
+              return quizData.FinalExamQuestions[questionIndex].id;
+            });
+            setCounterKey((prevKey) => prevKey + 1);
+          } else {
+            navigation.reset({
+              routes: [
+                {
+                  name: "FinalResultScreen",
+                  params: {
+                    totalQuestions: Object.keys(quizData.FinalExamQuestions)
+                      .length,
+                  },
+                },
+              ],
+            });
+          }
+          setValue("");
+          // console.log(reduxState);
+        }
       });
+  }
+  const getData = async () => {
+    try {
+      const value = await AsyncStorage.getItem("@timer");
+      const storedChapterName = await AsyncStorage.getItem("@chapterName");
+
+      if (
+        storedChapterName !== null &&
+        storedChapterName == chapterName &&
+        value !== "0"
+      ) {
+        setCanContinue(true);
+      }
+
+      if (value !== null) {
+        // value previously stored
+        setCount(value);
+        dispatch(setTimer(value));
+      }
+    } catch (e) {
+      // error reading value
+    }
   };
+  ////End Async Storage Functions
 
-  /////////Header Questions List Rendering Flat List
-  const renderListQuestions = ({ item, index }) => (
-    <View
-      style={{
-        flexDirection: "row",
-        backgroundColor: "white",
-        marginVertical: 5,
-      }}
-    >
-      <TouchableOpacity
-        onPress={async () => {
-          setLoading(true);
-          setQuestionIndex(index);
-          setQuestionID(quizData.FinalExamQuestions[index].id);
-          await fetchOptions();
-        }}
-      >
-        <View
-          style={{
-            marginHorizontal: 3,
-
-            borderRadius: 100,
-            width: 30,
-            height: 30,
-
-            justifyContent: "center",
-
-            backgroundColor:
-              item.status == "correct"
-                ? COLORS.primary
-                : item.status == "wrong"
-                ? "#e74c3c"
-                : item.status == "favorite"
-                ? "#9b59b6"
-                : "#3498db",
-          }}
-        >
-          <Text
-            style={{
-              color: "white",
-              textAlign: "center",
-              fontSize: item.question == questionID ? SIZES.h2 : SIZES.h4,
-              fontWeight: item.question == questionID ? "bold" : "300",
-            }}
-          >
-            {index + 1}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
-
-  const fetchChapterQuestions = async () => {
-    await axios
-      .get(
-        `${webURL}/api/FinalExamQuestions/${id}?email=admin@admin.com&password=admin`
-      )
-      .then((res) => {
-        setLoading(true);
-        // console.log(res.status);
-
-        setQuestions(res.data);
-        //console.log(questions.FinalExamQuestions[0]);
-        setLoading(false);
-      });
-
-    // console.log(questions.FinalExamQuestions[1].id);
-    // console.log(questions.FinalExamQuestions[0].id);
-
-    if (!questions == "") setQuestionID(questions.FinalExamQuestions[0].id);
-    // console.log(questions.FinalExamQuestions);
-
-    fetchOptions();
+  ///Text To Speech ///
+  const speak = () => {
+    Speech.speak(quizData.FinalExamQuestions[questionIndex].question, {
+      language: "sv-SE",
+    });
   };
 
   const fetchOptions = async () => {
@@ -215,6 +282,7 @@ const FinalQuizScreen = ({ route, navigation }) => {
       }
     );
     const { data } = res;
+
     ///check if user is Active
     if (res.data.active == 0) {
       alert(res.data.error);
@@ -230,564 +298,327 @@ const FinalQuizScreen = ({ route, navigation }) => {
     setLoading(false);
     // console.log(questionID);
   };
+
   const renderItem = ({ item }) => (
     <OptionBox answer={item.answer} answerID={item.id} />
   );
 
-  const OptionBox = ({ answer, answerID }) => {
+  const OptionBox = ({ answer, answerID, correctAnswerID, userAnswerID }) => {
     return (
-      <View style={{ flex: 1 }}>
-        <TouchableOpacity
-          onPress={() => {
-            setValue(answerID);
+      <Ripple
+        onPress={() => {
+          setValue(answerID);
+
+          handleNext(answerID);
+        }}
+        rippleDuration={300}
+        style={{
+          height: 60,
+          width: "90%",
+          alignSelf: "center",
+          backgroundColor: COLORS.white,
+          flexDirection: "row",
+          alignItems: "center",
+          borderBottomWidth: 1,
+          borderBottomColor: COLORS.gray,
+        }}
+      >
+        <View
+          style={{
+            width: 50,
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              height: 20,
+              width: 20,
+              borderWidth: 1,
+              borderRadius: 10,
+              backgroundColor: getCheckColor(value, answerID),
+              borderColor: COLORS.green,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          ></View>
+        </View>
+        <View
+          style={{
+            flex: 1,
           }}
         >
           <Text
             style={{
-              marginRight: 10,
-              // backgroundColor:
-              //   answerID == userAnswerID && value == answerID
-              //     ? COLORS.primary
-              //     : value == answerID
-              //     ? COLORS.primary
-              //     : "white",
-
-              backgroundColor:
-                value == answerID
-                  ? COLORS.primary
-                  : value == answerID
-                  ? COLORS.primary
-                  : "white",
-              marginVertical: 8,
-              textAlign: "center",
-              fontSize: SIZES.h4,
-              alignSelf: "center",
-              width: "90%",
-              borderWidth: 2,
-              padding: 8,
-              borderRadius: 5,
-              color:
-                value == answerID
-                  ? COLORS.white
-                  : value == answerID
-                  ? COLORS.white
-                  : "black",
-              borderColor: COLORS.primary,
-
-              borderRadius: 10,
+              paddingHorizontal: 10,
             }}
           >
             {answer}
           </Text>
-          {/* <RadioButton.Group
-          onValueChange={(value) => {
-            setValue(value);
-          }}
-          value={value}
-        >
-          <RadioButton.Item
-            style={{ marginVertical: -5 }}
-            labelStyle={{ fontSize: SIZES.h4, color: COLORS.primary }}
-            color={COLORS.primary}
-            label={answer}
-            value={answerID}
-          />
-        </RadioButton.Group> */}
-        </TouchableOpacity>
-      </View>
+        </View>
+      </Ripple>
     );
   };
-
-  //  loading == true ? (
-  //   <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-  //     <ActivityIndicator color={COLORS.primary} size={"large"} />
-  //     <Text style={{ color: COLORS.primary }}>Loading Question</Text>
-  //   </View>
-  // ) : (
   return (
-    <>
-      <Header
-        style={{ backgroundColor: COLORS.primary }}
-        androidStatusBarColor={COLORS.primary}
-      >
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexDirection: "row",
-          }}
-        >
-          <Ionicons
-            onPress={() => {
-              navigation.replace("Home");
+    <View style={styles.container}>
+      <MyStatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
+      <AppHeader
+        navigation={navigation}
+        totalQuestions={Object.keys(quizData?.FinalExamQuestions).length || 0}
+        currentQuestion={questionIndex + 1}
+        screen={"FINALQUIZ"}
+        timerValue={timerValue}
+        count={count}
+        running={running}
+        key={key}
+        title={chapterName}
+        iconName={"chevron-left"}
+        onPress={() => navigation.goBack()}
+      />
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={{ alignSelf: "center" }}>
+          <ImageModal
+            resizeMode="contain"
+            imageBackgroundColor="white"
+            style={{
+              width,
+              height: 170,
+              marginVertical: 10,
             }}
-            style={{ alignSelf: "center", left: 5 }}
-            name="arrow-back-circle-outline"
-            size={35}
-            color="white"
+            source={{
+              uri: webURL + quizData?.FinalExamQuestions[questionIndex]?.imgURL,
+            }}
           />
-          <Text
-            style={{
-              fontSize: SIZES.h2,
-
-              fontWeight: "bold",
-              color: "white",
-              left: 20,
-            }}
-          >
-            Final Exam
-          </Text>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.reset({
-                routes: [{ name: "FinalResultScreen" }],
-              });
-            }}
-          >
-            <Text
-              style={{
-                fontSize: SIZES.h3,
-                color: "white",
-                alignSelf: "center",
-                borderWidth: 1,
-                padding: 10,
-                borderColor: "white",
-                borderRadius: 10,
-                textAlign: "center",
-              }}
-            >
-              Overview
-            </Text>
-          </TouchableOpacity>
         </View>
-
-        <></>
-      </Header>
-
-      {/* <Header title={chapterName} questionIndex={questionIndex} /> */}
-      {loading == true ? (
         <View
           style={{
-            flex: 1,
-            backgroundColor: "white",
+            flex: 0.5,
+            marginTop: -5,
+            margin: 5,
+            borderRadius: 20,
             alignItems: "center",
             justifyContent: "center",
+            padding: 0,
           }}
         >
-          <ActivityIndicator color={COLORS.primary} size={"large"} />
           <Text
             style={{
-              width: 200,
+              fontSize: SIZES.h3 + 3,
+              alignSelf: "center",
+              color: COLORS.black,
               textAlign: "center",
-
-              color: COLORS.primary,
-              fontSize: SIZES.h2,
-              margin: 0,
+              marginHorizontal: 15,
+              fontWeight: "bold",
             }}
           >
-            Loading Question
+            {quizData.FinalExamQuestions[questionIndex]?.question}
           </Text>
-        </View>
-      ) : (
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "white",
-            justifyContent: "center",
-          }}
-        >
-          {quizData.FinalExamQuestions[questionIndex].imgURL == null ? (
-            <View></View>
-          ) : (
-            <View style={{ alignSelf: "center" }}>
-              <ImageModal
-                resizeMode="contain"
-                imageBackgroundColor="white"
-                style={{
-                  width: 250,
-                  height: 220,
-
-                  marginVertical: 10,
-                }}
-                source={{
-                  uri:
-                    webURL + quizData.FinalExamQuestions[questionIndex].imgURL,
-                }}
-              />
-            </View>
-          )}
           <View
             style={{
-              flex: 0.5,
-              backgroundColor: COLORS.primary,
-              // opacity: "rgba(255,255,255,0.5)",
-
-              marginTop: -5,
-              margin: 5,
-              borderRadius: 20,
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 0,
-
-              //Box Shadow
-              shadowColor: "#000",
-              shadowOffset: {
-                width: 0,
-                height: 1,
-              },
-              shadowOpacity: 0.2,
-              shadowRadius: 1.41,
-              elevation: 2,
+              alignSelf: "flex-end",
+              position: "absolute",
+              bottom: 10,
+              right: 10,
             }}
           >
-            <Text
-              style={{
-                fontSize: SIZES.h3,
-                alignSelf: "center",
-                color: COLORS.white,
-                textAlign: "center",
-                marginHorizontal: 15,
-              }}
-            >
-              {quizData.FinalExamQuestions[questionIndex].question}
-            </Text>
-            <View
-              style={{
-                alignSelf: "flex-end",
-                position: "absolute",
-                bottom: 10,
-                right: 10,
-              }}
-            >
-              <MaterialCommunityIcons
-                name="account-voice"
-                size={24}
-                color="white"
-                style={{ alignSelf: "flex-end" }}
-                onPress={speak}
-              />
-            </View>
-          </View>
-
-          <View style={styles.optionsContainer}>
-            <FlatList
-              data={options.options}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={renderItem}
+            <MaterialCommunityIcons
+              name="account-voice"
+              size={24}
+              color="black"
+              style={{ alignSelf: "flex-end" }}
+              onPress={speak}
             />
           </View>
-
-          {/* End Activity Loader here */}
         </View>
-      )}
+
+        <View style={styles.optionsContainer}>
+          <FlatList
+            data={options?.options}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
+          />
+        </View>
+      </ScrollView>
+
       <View
         style={{
-          flexDirection: "row",
-          justifyContent: "space-around",
-          backgroundColor: "white",
+          backgroundColor: "transparent",
         }}
       >
-        <View>
-          <TouchableOpacity
-            disabled={questionIndex == 0 ? true : false}
-            onPress={() => {
-              if (
-                questionIndex <
-                Object.keys(quizData.FinalExamQuestions).length - 1
-              ) {
-                // console.log(questionID);
-                setQuestionIndex(--questionIndex);
-
-                setQuestionID(quizData.FinalExamQuestions[questionIndex].id);
-
-                // fetchOptions();
-              }
-            }}
-          >
-            <FontAwesome5 name="backward" size={24} color={COLORS.primary} />
-          </TouchableOpacity>
-        </View>
-        <View>
-          <TouchableOpacity>
-            {/* <FontAwesome5 name="forward" size={40} color={COLORS.primary} /> */}
-          </TouchableOpacity>
-        </View>
-        <View>
-          <TouchableOpacity
-            onPress={async () => {
-              if (value == "") {
-                alert("Please Select An Option");
-                return null;
-              }
-
-              setIsSelected(true);
-              //  console.log(answer);
-              await axios
-                .get(`${webURL}/api/getCorrectAnswer/${questionID}`, {
-                  headers: {
-                    Authorization: `Bearer ${user.token}`,
-                  },
-                })
-                .then((res) => {
-                  ///check if user is Active
-                  if (res.data.active == 0) {
-                    alert(res.data.error);
-                    setLoading(false);
-                    navigation.reset({
-                      routes: [{ name: "Login" }],
-                    });
-                  }
-                  ///
-
-                  if (res.data.CorrectAnswer.id == value) {
-                    //alert("Correct");
-                    updateDB(questionID, value);
-                    dispatch(
-                      setProgress({
-                        [questionID]: value,
-                      })
-                    );
-                    dispatch(
-                      updatePagingStatus([
-                        {
-                          question: questionID,
-                          status: "correct",
-                        },
-                      ])
-                    );
-                    //console.log(Object.keys(userProgress).length);
-                    dispatch(setCorrectAnswers());
-
-                    /////if questions quiz is completed?
-                    if (
-                      questionIndex <
-                      Object.keys(quizData.FinalExamQuestions).length - 1
-                    ) {
-                      setQuestionIndex(++questionIndex);
-                      setQuestionID(
-                        quizData.FinalExamQuestions[questionIndex].id
-                      );
-                      // setCounterKey((prevKey) => prevKey + 1);
-                    } else {
-                      navigation.reset({
-                        routes: [{ name: "FinalResultScreen" }],
-                      });
-                    }
-                  } else {
-                    // alert("False");
-                    updateDB(questionID, value); //Update Progress
-                    dispatch(
-                      setProgress({
-                        [questionID]: value,
-                      })
-                    );
-                    dispatch(
-                      updatePagingStatus([
-                        {
-                          question: questionID,
-                          status: "wrong",
-                        },
-                      ])
-                    );
-
-                    //console.log(Object.keys(userProgress).length);
-                    dispatch(setWrongAnswers());
-
-                    console.log(reduxWrongAnswers);
-                    if (
-                      questionIndex <
-                      Object.keys(quizData.FinalExamQuestions).length - 1
-                    ) {
-                      setQuestionIndex(++questionIndex);
-                      setQuestionID(
-                        quizData.FinalExamQuestions[questionIndex].id
-                      );
-                      setCounterKey((prevKey) => prevKey + 1);
-                    } else {
-                      navigation.reset({
-                        routes: [{ name: "FinalResultScreen" }],
-                      });
-                    }
-                    setValue("");
-                    console.log(reduxState);
-                  }
-                });
-            }}
-          >
-            <FontAwesome5 name="forward" size={24} color={COLORS.primary} />
-          </TouchableOpacity>
-        </View>
-      </View>
-      <View style={{ backgroundColor: "white" }}>
-        {/* <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={pagingStatus}
-          keyExtractor={(item) => item.question.toString()}
-          renderItem={renderListQuestions}
-          key={questionIndex}
-        /> */}
-      </View>
-      <View style={styles.bottomBar}>
-        <Text
+        <View
           style={{
-            fontSize: SIZES.h2,
-            color: COLORS.primary,
+            height: 50,
+            flexDirection: "row",
+            justifyContent: "space-evenly",
             alignSelf: "center",
-            marginLeft: 10,
-            fontWeight: "bold",
+            alignItems: "center",
+            width: "95%",
+            backgroundColor: "#28282B",
+            borderRadius: 10,
+            paddingHorizontal: 10,
+            position: "relative",
+            bottom: 10,
           }}
         >
-          {questionIndex + 1}/{Object.keys(quizData.FinalExamQuestions).length}
-        </Text>
-        <View style={styles.timer}>
-          {/* <CountdownCircleTimer
-            //key={counterKey}
-            onComplete={() => {
-              if (
-                questionIndex <
-                Object.keys(quizData.FinalExamQuestions).length - 1
-              ) {
-                setQuestionIndex(++questionIndex);
-                setQuestionID(quizData.FinalExamQuestions[questionIndex].id);
-              } else {
-                navigation.reset({
-                  routes: [{ name: "FinalResultScreen" }],
-                });
-              }
-            }}
-            size={70}
-            isPlaying={true}
-            strokeWidth={8}
-            duration={3000}
-            colors={[
-              [COLORS.primary, 0.4],
-              ["#F7B801", 0.4],
-              ["#A30000", 0.2],
-            ]}
-          >
-            {({ remainingTime, animatedColor }) => (
-              <>
-                <Animated.Text
-                  style={{ color: COLORS.primary, fontSize: SIZES.h2 }}
-                >
-                  {Math.floor(remainingTime / 60)}
-                </Animated.Text>
-                <Text style={{ fontSize: 8, color: COLORS.primary }}>
-                  Minutes
-                </Text>
-              </>
-            )}
-          </CountdownCircleTimer> */}
-          <CountDown
-            until={3000}
-            digitStyle={{
-              backgroundColor: COLORS.primary,
-              borderWidth: 2,
-              borderColor: COLORS.primary,
-            }}
-            digitTxtStyle={{ color: "white", fontSize: 30 }}
-            size={20}
-            // onChange={}
-            onFinish={async () => {
-              await axios
-                .get(`${webURL}/api/resetQuestionStatusFinal/${user.user_id}`, {
-                  headers: {
-                    Authorization: `Bearer ${user.token}`,
-                  },
-                })
+          <Ripple
+            rippleCentered
+            rippleDuration={300}
+            onPress={async () => {
+              await axios({
+                method: "put",
+                url: `${webURL}/api/saveQuestion`,
+                headers: {
+                  Authorization: `Bearer ${user.token}`,
+                  "Content-Type": "application/x-www-form-urlencoded",
+                },
+                data: qs.stringify({
+                  user_id: user.user_id,
+                  question_id: questionID,
+                }),
+              })
                 .then((res) => {
-                  res.status == 200 ? alert("Time's Up! ") : null;
-
-                  navigation.navigate("FinalResultScreen");
+                  dispatch(
+                    updatePagingStatus([
+                      {
+                        question: questionID,
+                        status: "favorite",
+                      },
+                    ])
+                  );
+                  alert("Added To Favourites");
                 })
                 .catch((err) => {
-                  console.log(err);
-                  // alert("Cannot reset the progress, Try agin later!");
+                  console.log("Error", err.response.data);
                 });
             }}
-            //onPress={() => alert("Timer Stopped")}
-            timeToShow={["M", "S"]}
-            size={20}
-            running={true}
-            //key={counterKey}
+            style={{
+              height: "100%",
+              alignItems: "center",
+              justifyContent: "space-evenly",
+              flexDirection: "row",
+              paddingHorizontal: 10,
+            }}
+          >
+            <Ionicons name="bookmark-outline" size={20} color="white" />
+            <Text
+              style={{
+                color: COLORS.white,
+                paddingHorizontal: 10,
+                fontWeight: Platform.OS === "ios" ? "600" : "bold",
+              }}
+            >
+              {"Mark"}
+            </Text>
+          </Ripple>
+
+          <View
+            style={{
+              height: 35,
+              borderColor: COLORS.white,
+              borderWidth: 0.5,
+            }}
           />
-        </View>
-        <TouchableOpacity
-          onPress={async () => {
-            await axios({
-              method: "put",
-              url: `${webURL}/api/saveQuestion`,
-              headers: {
-                Authorization: `Bearer ${user.token}`,
-                "Content-Type": "application/x-www-form-urlencoded",
-              },
-              data: qs.stringify({
-                user_id: user.user_id,
-                question_id: questionID,
-              }),
-            })
-              .then((res) => {
-                ///check if user is Active
-                if (res.data.active == 0) {
-                  alert(res.data.error);
-                  setLoading(false);
-                  navigation.reset({
-                    routes: [{ name: "Login" }],
-                  });
-                  return;
-                }
-                ///
-                dispatch(
-                  updatePagingStatus([
-                    {
-                      question: questionID,
-                      status: "favorite",
+
+          <Ripple
+            rippleCentered
+            rippleDuration={300}
+            onPress={() => {
+              navigation.reset({
+                routes: [
+                  {
+                    name: "FinalResultScreen",
+                    params: {
+                      totalQuestions: Object.keys(quizData.FinalExamQuestions)
+                        .length,
                     },
-                  ])
-                );
-                alert("Added To Favourites");
-              })
-              .catch((err) => {
-                console.log("Error", err.response.data);
+                  },
+                ],
               });
-          }}
-        >
-          <AntDesign
-            name="heart"
-            size={24}
-            color={"#e74c3c"}
-            style={{ marginRight: 10, alignSelf: "center" }}
-          />
-        </TouchableOpacity>
+            }}
+            style={{
+              height: "100%",
+              alignItems: "center",
+              justifyContent: "space-evenly",
+              flexDirection: "row",
+            }}
+          >
+            <Ionicons name="checkmark" size={20} color="white" />
+            <Text
+              style={{
+                color: COLORS.white,
+                paddingHorizontal: 5,
+                fontWeight: Platform.OS === "ios" ? "600" : "bold",
+              }}
+            >
+              {"Correct test"}
+            </Text>
+          </Ripple>
+        </View>
       </View>
-    </>
+    </View>
   );
-  // );
 };
 
 export default FinalQuizScreen;
 
 const styles = StyleSheet.create({
-  bottomBar: {
-    flex: 0.2,
-    height: 50,
-    bottom: 2,
-    borderRadius: 1,
-    borderColor: COLORS.primary,
-    backgroundColor: "white",
-    justifyContent: "space-between",
-
-    flexDirection: "row",
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.lightGray1,
   },
-  timer: {
-    alignSelf: "center",
-
-    marginRight: 15,
+  scroll: {
+    flex: 1,
   },
   optionsContainer: {
     marginBottom: 3,
     flex: 1,
+  },
+  centeredView: {
+    position: "absolute",
+    width: "80%",
+    bottom: "30%",
+    left: "10%",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+  },
+  modalView: {
+    width: "100%",
+    borderRadius: 10,
+    margin: 20,
+    backgroundColor: "white",
+
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+  },
+  buttonOpen: {
+    backgroundColor: "#F194FF",
+  },
+  buttonClose: {
+    backgroundColor: "#2196F3",
+  },
+  textStyle: {
+    borderRadius: 5,
+    color: "white",
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
   },
 });

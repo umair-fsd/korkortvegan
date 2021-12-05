@@ -17,11 +17,12 @@ import { COLORS, SIZES } from "../../constants";
 import { useDispatch, useSelector } from "react-redux";
 import { emptyProgress, setProgress } from "../../redux/actions";
 import RenderOverView from "../../components/RenderOverView";
-import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import { AnimatedCircularProgress } from "react-native-circular-progress";
 import Ripple from "react-native-material-ripple";
 
 const FullFinalResultScreen = ({ route, navigation }) => {
-  const [fill, setFill]=useState(30);
+  const [showOverView, setShowOverView] = useState(false);
+  const [fill, setFill] = useState(30);
   const [overViewData, setOverViewData] = useState("");
   const reduxState = useSelector((state) => state.userProgress);
   const dispatch = useDispatch();
@@ -31,7 +32,6 @@ const FullFinalResultScreen = ({ route, navigation }) => {
   const user = useSelector((state) => state.user);
   const webURL = useSelector((state) => state.webURL);
   const [loadingResetProgress, setLoadingResetProgress] = useState(false);
-
 
   useEffect(() => {
     fetchOverView();
@@ -71,132 +71,123 @@ const FullFinalResultScreen = ({ route, navigation }) => {
     />
   );
 
-  // const updateDB = async () => {
-  //   const values = reduxState.reduce((r, c) => Object.assign(r, c), {});
-  //   const finalResult = {
-  //     UserProgress: values,
-  //   };
-  //   await axios({
-  //     method: "put",
-  //     url: "https://stssodra.dimitris.in/api/updateUserProgressFinalExam/1",
-  //     headers: {
-  //       "Content-Type": "application/x-www-form-urlencoded",
-  //     },
-  //     data: qs.stringify({
-  //       email: "admin@admin.com",
-  //       password: "admin",
-  //       answersArray: JSON.stringify(finalResult),
-  //       doneUntil: 66,
-  //     }),
-  //     headers: {
-  //       "content-type": "application/x-www-form-urlencoded;charset=utf-8",
-  //     },
-  //   })
-  //     .then((res) => {
-  //       console.log(res.data);
-  //       dispatch(emptyProgress());
-  //     })
-  //     .catch((err) => {
-  //       console.log("Error", err.response);
-  //     });
-  // };
   return (
     <View style={{ flex: 1 }}>
-    <Header navigation={navigation} />
+      <Header navigation={navigation} />
       <View>
-        <View style={{
-                height:70,
-                width:'100%',
-                backgroundColor:COLORS.green,
-                alignItems:'center',
-                justifyContent:'center',
-                marginVertical:10
-              }}>
-            <Text style={{
-                color:COLORS.white,
-                fontSize:25,
-              }}>
-              {"PASSED"}
-            </Text>
-        </View>
-        <View style={{
-            alignItems:'center'    
-          }}>
-            <Text  ext style={{
-                fontSize:22,
-                marginVertical:10,
-                fontWeight:Platform.OS==='ios' ? '700' : 'bold'
-              }}>
-              {"Results"}
-            </Text>
-            <AnimatedCircularProgress
-                size={150}
-                width={8}
-                fill={fill}
-                tintColor={COLORS.green}
-                backgroundColor="#3d5875"
+        {/* <View
+          style={{
+            height: 70,
+            width: "100%",
+            backgroundColor: COLORS.green,
+            alignItems: "center",
+            justifyContent: "center",
+            marginVertical: 10,
+          }}
+        >
+          <Text
+            style={{
+              color: COLORS.white,
+              fontSize: 25,
+            }}
+          >
+            {"PASSED"}
+          </Text>
+        </View> */}
+        <View
+          style={{
+            alignItems: "center",
+          }}
+        >
+          <Text
+            ext
+            style={{
+              fontSize: 22,
+              marginVertical: 10,
+              fontWeight: Platform.OS === "ios" ? "700" : "bold",
+            }}
+          >
+            {"Results"}
+          </Text>
+          <AnimatedCircularProgress
+            size={150}
+            width={8}
+            fill={parseInt(correctAnswers) || 0}
+            tintColor={COLORS.green}
+            backgroundColor="#3d5875"
+          >
+            {(fill) => (
+              <>
+                <Text
+                  style={{
+                    fontSize: 18,
+                  }}
                 >
-                {
-                  (fill) => (
-                    <>
-                      <Text style={{
-                          fontSize:18 
-                        }}>
-                        { fill + "/" + 70}
-                      </Text>
-                    </>
-                  )
-              }
-            </AnimatedCircularProgress>
-            <Ripple 
-              rippleCentered
-              rippleDuration={300}
-              style={{
-                height:55,
-                width:"70%",
-                borderRadius:30,
-                backgroundColor:COLORS.green, 
-                alignItems:'center',
-                justifyContent:'center',
-                marginTop:20
-              }}>
-                <Text style={{
-                    color:COLORS.white,
-                    fontSize:20,
-                    fontWeight:Platform.OS==='ios' ? '700' : 'bold'  
-                  }}>
-                  {"Continue"}
+                  {fill + "/" + 70}
                 </Text>
-            </Ripple>
-            <Ripple 
-              rippleCentered
-              rippleDuration={300}
+              </>
+            )}
+          </AnimatedCircularProgress>
+          <Ripple
+            rippleCentered
+            rippleDuration={300}
+            style={{
+              height: 55,
+              width: "70%",
+              borderRadius: 30,
+              backgroundColor: COLORS.green,
+              alignItems: "center",
+              justifyContent: "center",
+              marginTop: 20,
+            }}
+          >
+            <Text
               style={{
-                height:55,
-                width:"70%",
-                borderRadius:30,
-                backgroundColor: '#0F3325', 
-                alignItems:'center',
-                justifyContent:'center',
-                marginVertical:15
-              }}>
-                <Text style={{
-                    color:COLORS.white,
-                    fontSize:20,
-                    fontWeight:Platform.OS==='ios' ? '700' : 'bold'  
-                  }}>
-                  {"Review answer question"}
-                </Text>
-            </Ripple>
+                color: COLORS.white,
+                fontSize: 20,
+                fontWeight: Platform.OS === "ios" ? "700" : "bold",
+              }}
+            >
+              {"Home"}
+            </Text>
+          </Ripple>
+          <Ripple
+            onPress={() => {
+              setShowOverView(!showOverView);
+            }}
+            rippleCentered
+            rippleDuration={300}
+            style={{
+              height: 55,
+              width: "70%",
+              borderRadius: 30,
+              backgroundColor: "#0F3325",
+              alignItems: "center",
+              justifyContent: "center",
+              marginVertical: 15,
+            }}
+          >
+            <Text
+              style={{
+                color: COLORS.white,
+                fontSize: 20,
+                fontWeight: Platform.OS === "ios" ? "700" : "bold",
+              }}
+            >
+              {"Review answer question"}
+            </Text>
+          </Ripple>
         </View>
       </View>
-      <View style={styles.overView}>
-        <FlatList
-          data={overViewData}
-          keyExtractor={(item) => item.question_id.toString()}
-          renderItem={renderOverView}
-        />
-      </View>
+      {showOverView && (
+        <View style={styles.overView}>
+          <FlatList
+            data={overViewData}
+            keyExtractor={(item) => item.question_id.toString()}
+            renderItem={renderOverView}
+          />
+        </View>
+      )}
     </View>
   );
 };

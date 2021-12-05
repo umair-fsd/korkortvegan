@@ -693,28 +693,6 @@ const QuizScreen = ({ route, navigation }) => {
           <TouchableOpacity
             onPress={async () => {
               if (value == "" || value == null) {
-                // if (
-                //   questionIndex <
-                //   Object.keys(quizData.chaptersWithQuestions).length - 1
-                // ) {
-                //   // console.log(questionID);
-                //   setQuestionIndex(++questionIndex);
-
-                //   setQuestionID(
-                //     quizData.chaptersWithQuestions[questionIndex].id
-                //   );
-
-                //   fetchOptions();
-                //   setCounterKey((prevKey) => prevKey + 1);
-                //   dispatch(setUnAnswered());
-                // } else {
-                //   dispatch(setUnAnswered());
-
-                //   navigation.reset({
-                //     routes: [{ name: "ResultScreen" }],
-                //   });
-                // }
-
                 alert("Please Select An Option");
                 return null;
               }
